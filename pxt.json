@@ -1,24 +1,24 @@
 {
-  "name": "robot-soccer-ev3-makecode",
-  "version": "0.1.0",
-  "description": "Runtime EV3 simplificado derivado de soccer-robot.",
-  "license": "MIT",
-  "dependencies": {
-    "core": "*"
-  },
-  "files": [
-    "main.ts",
-    "config.ts",
-    "hardware.ts",
-    "sensors.ts",
-    "movement.ts",
-    "strategy.ts",
-    "attack.ts",
-    "defense.ts",
-    "search.ts",
-    "recovery.ts",
-    "stateMachine.ts",
-    "assets.json"
-  ],
-  "testFiles": []
+    "name": "robot-soccer-ev3-makecode",
+    "version": "0.1.0",
+    "description": "Runtime EV3 simplificado derivado de soccer-robot.",
+    "license": "MIT",
+    "dependencies": {
+        "ev3": "*"
+    },
+    "files": [
+        "main.ts",
+        "config.ts",
+        "hardware.ts",
+        "sensors.ts",
+        "movement.ts",
+        "strategy.ts",
+        "attack.ts",
+        "defense.ts",
+        "search.ts",
+        "recovery.ts",
+        "stateMachine.ts",
+        "assets.json"
+    ],
+    "testFiles": []
 }

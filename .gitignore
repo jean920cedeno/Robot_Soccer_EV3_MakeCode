@@ -4,3 +4,5 @@ built/
 *.hex
 *.mkcd
 .pxt/
+pxt_modules/
+tsconfig.json

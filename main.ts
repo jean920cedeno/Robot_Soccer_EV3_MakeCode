@@ -1,4 +1,4 @@
-let hardware = new RobotSoccer.EV3RobotHardware()
+let hardware = new RobotSoccer.EV3Runtime()
 let movement = new RobotSoccer.Movement(hardware)
 let sensorsRuntime = new RobotSoccer.Sensors(hardware)
 let stateMachine = new RobotSoccer.StateMachine(hardware)

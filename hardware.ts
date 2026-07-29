@@ -38,4 +38,8 @@ namespace RobotSoccer {
             return control.millis()
         }
     }
+
+    // Nombre conservado para compatibilidad con el runtime original.
+    export class EV3Runtime extends EV3RobotHardware {
+    }
 }

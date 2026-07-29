@@ -1,6 +1,6 @@
 # Robot Soccer EV3 MakeCode
 
-Runtime para Microsoft MakeCode EV3 del robot de fútbol autónomo. El comportamiento de búsqueda, aproximación, ataque, defensa y recuperación se mantiene separado de la plataforma física.
+Runtime para Microsoft MakeCode EV3 del robot de fútbol autónomo. El comportamiento de búsqueda, aproximación, ataque, defensa y recuperación se mantiene separado de la plataforma física. El proyecto declara la dependencia oficial `ev3` de MakeCode, que proporciona las APIs de motores, sensores y botones del ladrillo.
 
 ## Arquitectura
 

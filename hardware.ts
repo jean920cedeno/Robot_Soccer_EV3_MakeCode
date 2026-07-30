@@ -6,6 +6,8 @@ namespace RobotSoccer {
         stopAll(): void
         infraredProximity(): number
         millis(): number
+        enterPressed(): boolean
+        upPressed(): boolean
     }
 
     // Única frontera entre la lógica del robot y las APIs de MakeCode EV3.
@@ -36,6 +38,14 @@ namespace RobotSoccer {
 
         millis() {
             return control.millis()
+        }
+
+        enterPressed() {
+            return brick.buttonEnter.wasPressed()
+        }
+
+        upPressed() {
+            return brick.buttonUp.wasPressed()
         }
     }
 

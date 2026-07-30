@@ -7,16 +7,14 @@ let attackStrategy = new RobotSoccer.AttackStrategy()
 let defenseStrategy = new RobotSoccer.DefenseStrategy()
 let recoveryStrategy = new RobotSoccer.RecoveryStrategy()
 
-brick.buttonEnter.onEvent(ButtonEvent.Pressed, function () {
-    stateMachine.transition(RobotSoccer.RobotState.STOP)
-    hardware.stopAll()
-})
-
-brick.buttonUp.onEvent(ButtonEvent.Pressed, function () {
-    stateMachine.transition(RobotSoccer.RobotState.SEARCH)
-})
-
 forever(function () {
+    if (hardware.enterPressed()) {
+        stateMachine.transition(RobotSoccer.RobotState.STOP)
+        hardware.stopAll()
+    } else if (hardware.upPressed()) {
+        stateMachine.transition(RobotSoccer.RobotState.SEARCH)
+    }
+
     let snapshot = sensorsRuntime.read()
     stateMachine.update(snapshot, sensorsRuntime, movement)
 

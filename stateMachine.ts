@@ -11,10 +11,13 @@ namespace RobotSoccer {
     }
 
     export class StateMachine {
-        private state = RobotState.INIT
+        private state: RobotState
         private enteredAt: number
+        private hardware: RobotHardware
 
-        constructor(private hardware: RobotHardware) {
+        constructor(hardware: RobotHardware) {
+            this.hardware = hardware
+            this.state = RobotState.INIT
             this.enteredAt = hardware.millis()
         }
 

@@ -1,6 +1,10 @@
 namespace RobotSoccer {
     export class Movement {
-        constructor(private hardware: RobotHardware) {}
+        private hardware: RobotHardware
+
+        constructor(hardware: RobotHardware) {
+            this.hardware = hardware
+        }
 
         forward() { this.hardware.drive(Config.DRIVE_SPEED, Config.DRIVE_SPEED) }
         reverse() { this.hardware.drive(-Config.DRIVE_SPEED, -Config.DRIVE_SPEED) }

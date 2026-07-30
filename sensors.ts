@@ -7,7 +7,11 @@ namespace RobotSoccer {
     }
 
     export class Sensors {
-        constructor(private hardware: RobotHardware) {}
+        private hardware: RobotHardware
+
+        constructor(hardware: RobotHardware) {
+            this.hardware = hardware
+        }
 
         read(): SensorSnapshot {
             return {

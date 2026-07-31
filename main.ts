@@ -48,7 +48,7 @@ let arcoEncontrado = false
 // Configuración de umbrales (ajusta según pruebas en
 // tu simulador)
 UMBRAL_BLANCO = 70
-VELOCIDAD_GIRO = 20
+VELOCIDAD_GIRO = 5
 VELOCIDAD_AVANCE = 75
 // --- SECUENCIA PRINCIPAL ---
 buscarBalon()

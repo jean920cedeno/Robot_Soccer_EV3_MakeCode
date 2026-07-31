@@ -1,31 +1,62 @@
-let hardware = new RobotSoccer.EV3Runtime()
-let movement = new RobotSoccer.Movement(hardware)
-let sensorsRuntime = new RobotSoccer.Sensors(hardware)
-let stateMachine = new RobotSoccer.StateMachine(hardware)
-let searchStrategy = new RobotSoccer.SearchStrategy()
-let attackStrategy = new RobotSoccer.AttackStrategy()
-let defenseStrategy = new RobotSoccer.DefenseStrategy()
-let recoveryStrategy = new RobotSoccer.RecoveryStrategy()
-
-forever(function () {
-    if (hardware.enterPressed()) {
-        stateMachine.transition(RobotSoccer.RobotState.STOP)
-        hardware.stopAll()
-    } else if (hardware.upPressed()) {
-        stateMachine.transition(RobotSoccer.RobotState.SEARCH)
+let balonEncontrado = false
+let arcoEncontrado = 0
+let reflejo = 0
+let UMBRAL_AZUL = 0
+let VELOCIDAD_AVANCE = 0
+let VELOCIDAD_GIRO = 0
+let UMBRAL_BLANCO = 0
+let distancia = 0
+// --- FASE 3: Buscar el arco (beacon IR o color azul)
+// ---
+function buscarArco() {
+    motors.largeBC.tank(VELOCIDAD_GIRO, 0 - VELOCIDAD_GIRO)
+    control.runInParallel(function () {
+        while (!(arcoEncontrado)) {
+            loops.pause(50)
+        }
+    })
+}
+// --- FASE 4: Empujar el balón hacia el arco ---
+function empujarHaciaArco() {
+    motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+    pause(3000)
+    motors.largeBC.stop()
+}
+// --- FASE 1: Buscar el balón blanco girando 360° ---
+function buscarBalon() {
+    motors.largeBC.tank(VELOCIDAD_GIRO, 0 - VELOCIDAD_GIRO)
+    control.runInParallel(function () {
+        while (!(balonEncontrado)) {
+            reflejo = sensors.color3.light(LightIntensityMode.Reflected)
+            if (reflejo >= UMBRAL_BLANCO) {
+                balonEncontrado = true
+                motors.largeBC.stop()
+            }
+            loops.pause(50)
+        }
+    })
+}
+// --- FASE 2: Acercarse al balón ---
+function acercarseAlBalon() {
+    motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+    distancia = sensors.infrared1.proximity()
+    while (distancia > 10) {
+        loops.pause(50)
     }
-
-    let snapshot = sensorsRuntime.read()
-    stateMachine.update(snapshot, sensorsRuntime, movement)
-
-    if (stateMachine.current() == RobotSoccer.RobotState.SEARCH) {
-        searchStrategy.run(snapshot, movement)
-    } else if (stateMachine.current() == RobotSoccer.RobotState.APPROACH || stateMachine.current() == RobotSoccer.RobotState.ATTACK) {
-        attackStrategy.run(snapshot, movement)
-    } else if (stateMachine.current() == RobotSoccer.RobotState.DEFEND) {
-        defenseStrategy.run(snapshot, movement)
-    } else if (stateMachine.current() == RobotSoccer.RobotState.RECOVER) {
-        recoveryStrategy.run(snapshot, movement)
-    }
-    pause(RobotSoccer.Config.LOOP_INTERVAL_MS)
-})
+    motors.largeBC.stop()
+}
+distancia = 0
+// Configuración de umbrales (ajusta según pruebas en
+// tu simulador)
+UMBRAL_BLANCO = 70
+UMBRAL_AZUL = 30
+VELOCIDAD_GIRO = 20
+VELOCIDAD_AVANCE = 40
+// --- SECUENCIA PRINCIPAL ---
+buscarBalon()
+pause(100)
+acercarseAlBalon()
+buscarArco()
+pause(100)
+empujarHaciaArco()
+brick.showString("Tarea completada", 1)

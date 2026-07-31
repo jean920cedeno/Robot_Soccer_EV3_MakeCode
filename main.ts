@@ -19,6 +19,7 @@ function buscarArco() {
     sensors.color2.onColorDetected(ColorSensorColor.Blue, function () {
         arcoEncontrado = true
         motors.largeBC.stop()
+        console.log("✅ ARCO detectado (azul)")
     })
     while (!(arcoEncontrado)) {
         loops.pause(50)
@@ -29,6 +30,7 @@ function buscarBalon() {
     while (!(balonEncontrado)) {
         // --- Girar (aprox. 360°, revisando el sensor
         // mientras gira) ---
+        tiempoGiro = 0 
         let direccion = Math.random() < 0.5 ? 1 : -1
         motors.largeBC.tank(VELOCIDAD_GIRO * direccion, 0 - VELOCIDAD_GIRO * direccion)
         while (tiempoGiro < 3000 && !(balonEncontrado)) {
@@ -36,6 +38,7 @@ function buscarBalon() {
             if (reflejo >= UMBRAL_BLANCO) {
                 balonEncontrado = true
                 motors.largeBC.stop()
+                console.log("✅ BALÓN detectado. Reflejo: " + reflejo)
             }
             loops.pause(50)
             tiempoGiro += 50
@@ -70,10 +73,25 @@ motors.largeB.setInverted(true)   // ← LÍNEA AGREGADA: corrige la dirección 
 motors.largeC.setInverted(true)
 
 // --- SECUENCIA PRINCIPAL ---
+console.log("Iniciando búsqueda de balón...")
 buscarBalon()
+console.log("Balón encontrado. balonEncontrado = " + balonEncontrado)
+
 pause(100)
+
+console.log("Acercándose al balón...")
 acercarseAlBalon()
+console.log("Ya cerca del balón.")
+
+console.log("Buscando arco...")
 buscarArco()
+console.log("Arco encontrado. arcoEncontrado = " + arcoEncontrado)
+
 pause(100)
+
+console.log("Empujando hacia el arco...")
 empujarHaciaArco()
-brick.showString("Tarea completada", 1) 
+console.log("Tarea completada.")
+
+brick.showString("Tarea completada", 1)
+

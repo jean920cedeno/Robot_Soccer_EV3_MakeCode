@@ -1,4 +1,4 @@
-//5_1
+//5_2
 let tiempoGiro = 0
 let reflejo = 0
 let balonEncontrado = false

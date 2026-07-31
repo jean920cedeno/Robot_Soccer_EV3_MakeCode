@@ -1,4 +1,5 @@
-//5_4
+//5_6
+brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
 let tiempoGiro = 0

@@ -67,6 +67,7 @@ VELOCIDAD_GIRO = 20
 VELOCIDAD_AVANCE = 75
 
 motors.largeB.setInverted(true)   // ← LÍNEA AGREGADA: corrige la dirección del motor invertido
+motors.largeC.setInverted(true)
 
 // --- SECUENCIA PRINCIPAL ---
 buscarBalon()

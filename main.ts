@@ -1,4 +1,6 @@
-//5_3
+//5_4
+console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
+console.log("Color: " + sensors.color3.color())
 let tiempoGiro = 0
 let reflejo = 0
 let balonEncontrado = false

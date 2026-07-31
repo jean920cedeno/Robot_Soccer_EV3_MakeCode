@@ -44,7 +44,7 @@ function buscarBalon() {
         if (!(balonEncontrado)) {
             motors.largeBC.stop()
             motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
-            pause(500)
+            pause(150)
             motors.largeBC.stop()
         }
     }

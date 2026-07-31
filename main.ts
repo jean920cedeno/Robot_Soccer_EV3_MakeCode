@@ -40,40 +40,33 @@ function buscarBalon() {
     
     while (!(balonEncontrado)) {
         intentos += 1
-        console.log("→ Intento #" + intentos + " del loop externo")
+        console.log("→ Intento #" + intentos)
         
         tiempoGiro = 0
         let direccion = Math.random() < 0.5 ? 1 : -1
-        console.log("→ Dirección elegida: " + direccion)
-        
         motors.largeBC.tank(VELOCIDAD_GIRO * direccion, 0 - VELOCIDAD_GIRO * direccion)
-        console.log("→ Motores girando. VELOCIDAD_GIRO=" + VELOCIDAD_GIRO)
         
         while (tiempoGiro < 3000 && !(balonEncontrado)) {
-            reflejo = sensors.color3.light(LightIntensityMode.Reflected)
-            console.log("   Reflejo: " + reflejo + " | tiempoGiro: " + tiempoGiro)
+            let colorDetectado = sensors.color3.color()
+            console.log("Color detectado: " + colorDetectado)
             
-            if (reflejo >= UMBRAL_BLANCO) {
+            if (colorDetectado == ColorSensorColor.White) {
                 balonEncontrado = true
                 motors.largeBC.stop()
-                console.log("✅ BALÓN DETECTADO. Reflejo: " + reflejo)
+                console.log("✅ BALÓN (blanco) detectado")
             }
             loops.pause(50)
             tiempoGiro += 50
         }
         
-        console.log("→ Salió del while interno. balonEncontrado=" + balonEncontrado + " tiempoGiro=" + tiempoGiro)
-        
         if (!(balonEncontrado)) {
-            console.log("→ No encontrado, avanzando un poco...")
             motors.largeBC.stop()
             motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
             pause(10)
             motors.largeBC.stop()
-            console.log("→ Avance completado, repite loop externo")
         }
     }
-    console.log("→ Saliendo de buscarBalon(). balonEncontrado=" + balonEncontrado)
+    console.log("→ Saliendo de buscarBalon()")
 }
 // --- FASE 2: Acercarse al balón ---
 function acercarseAlBalon() {

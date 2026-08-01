@@ -1,5 +1,11 @@
-console.log("=== TEST COLOR (nueva posición) ===")
+// --- TEST COMBINADO: showPorts() + console.log del color ---
+console.log("=== INICIANDO TEST COMBINADO ===")
+
 for (let i = 0; i < 10; i++) {
-    console.log("Color: [" + sensors.color3.color() + "]  (i=" + i + ")")
-    pause(300)
+    brick.showPorts()
+    let colorLeido = sensors.color3.color()
+    console.log("Color (puerto 3): [" + colorLeido + "]  (i=" + i + ")")
+    pause(500)
 }
+
+console.log("=== TEST TERMINADO ===")

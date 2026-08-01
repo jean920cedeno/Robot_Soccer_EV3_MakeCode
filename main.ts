@@ -1,4 +1,4 @@
-//5_10
+//5_11
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -92,7 +92,9 @@ VELOCIDAD_AVANCE = 75
 
 motors.largeB.setInverted(true)   // ← LÍNEA AGREGADA: corrige la dirección del motor invertido
 motors.largeC.setInverted(true)
-
+// --- TEST TEMPORAL DEL INFRARROJO ---
+console.log("IR proximity: " + sensors.infrared1.proximity())
+pause(3000)
 // --- SECUENCIA PRINCIPAL ---
 console.log("Iniciando búsqueda de balón...")
 buscarBalon()

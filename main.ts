@@ -1,4 +1,4 @@
-//5_275
+//5_275ee
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -11,25 +11,41 @@ let distancia = 0
 let UMBRAL_BLANCO = 0
 let VELOCIDAD_GIRO = 0
 let VELOCIDAD_AVANCE = 0
+
+// --- Retroceder hasta alejarse del obstáculo ---
+function marchaAtras() {
+    console.log("→ Iniciando marcha atrás")
+    motors.largeBC.tank(0 - VELOCIDAD_AVANCE, 0 - VELOCIDAD_AVANCE)
+
+    let distanciaActual = sensors.infrared1.proximity()
+    while (distanciaActual <= 30) {
+        distanciaActual = sensors.infrared1.proximity()
+        console.log("Proximity retrocediendo: [" + distanciaActual + "]")
+        loops.pause(50)
+    }
+
+    motors.largeBC.stop()
+    console.log("→ Marcha atrás terminada. Proximity final: [" + distanciaActual + "]")
+}
+
 // --- FASE 4: Empujar el balón hacia el arco ---
 function empujarHaciaArco() {
     motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
     pause(3000)
     motors.largeBC.stop()
 }
-// --- FASE 3: Buscar el arco (sensor de color puerto
-// 2) ---
+// --- FASE 3: Buscar el arco (sensor de color puerto 2) ---
 function buscarArco() {
     console.log("→ Entrando a buscarArco()")
     motors.largeBC.tank(VELOCIDAD_GIRO, 0 - VELOCIDAD_GIRO)
     console.log("→ Motores girando para buscar arco")
-    
+
     sensors.color2.onColorDetected(ColorSensorColor.Blue, function () {
         arcoEncontrado = true
         motors.largeBC.stop()
         console.log("✅ ARCO DETECTADO (azul)")
     })
-    
+
     while (!(arcoEncontrado)) {
         loops.pause(50)
     }
@@ -80,11 +96,13 @@ function buscarBalon() {
         console.log("→ Salió del while interno. balonEncontrado=" + balonEncontrado + " obstaculoDetectado=" + obstaculoDetectado)
 
         if (obstaculoDetectado) {
+            marchaAtras()
+
             // --- Maniobra de esquive: giro de 180° + avance ---
             console.log("→ Ejecutando giro de 180° para esquivar")
             motors.largeBC.stop()
             motors.largeBC.tank(VELOCIDAD_GIRO, 0 - VELOCIDAD_GIRO)
-            pause(2292)   // ajusta este tiempo para que sea aprox. 180° con tu VELOCIDAD_GIRO
+            pause(2292)
             motors.largeBC.stop()
 
             console.log("→ Avanzando después del giro de 180°")
@@ -119,14 +137,10 @@ function acercarseAlBalon() {
     console.log("→ Saliendo de acercarseAlBalon(). Distancia final: " + distancia)
 }
 let arcoEncontrado = false
-// Configuración de umbrales (ajusta según pruebas en
-// tu simulador)
 VELOCIDAD_GIRO = 20
 VELOCIDAD_AVANCE = 75
-// --- TEST TEMPORAL DEL INFRARROJO ---
 console.log("IR proximity: " + sensors.infrared1.proximity())
 pause(3000)
-// --- SECUENCIA PRINCIPAL ---
 console.log("Iniciando búsqueda de balón...")
 buscarBalon()
 console.log("Balón encontrado. balonEncontrado = " + balonEncontrado)

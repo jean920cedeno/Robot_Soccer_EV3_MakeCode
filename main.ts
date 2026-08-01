@@ -1,14 +1,11 @@
-// --- TEST AISLADO: ¿gira el robot? ¿el gyro lo detecta? ---
-console.log("=== TEST GYRO ===")
+console.log("=== TEST GYRO v2 (con pausa antes del reset) ===")
+motors.largeBC.stop()
+pause(500)
 sensors.gyro4.reset()
-console.log("Ángulo inicial: [" + sensors.gyro4.angle() + "]")
+pause(500)
+console.log("Ángulo tras reset y pausa: [" + sensors.gyro4.angle() + "]")
 
 motors.largeBC.tank(20, -20)
-
-for (let i = 0; i < 20; i++) {
-    console.log("Ángulo: [" + sensors.gyro4.angle() + "]  (i=" + i + ")")
-    pause(200)
-}
-
+pause(1000)
+console.log("Ángulo después de girar 1 segundo: [" + sensors.gyro4.angle() + "]")
 motors.largeBC.stop()
-console.log("=== TEST TERMINADO ===")

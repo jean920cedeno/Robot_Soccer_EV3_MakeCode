@@ -1,4 +1,4 @@
-//5_506
+//5_275
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -84,7 +84,7 @@ function buscarBalon() {
             console.log("→ Ejecutando giro de 180° para esquivar")
             motors.largeBC.stop()
             motors.largeBC.tank(VELOCIDAD_GIRO, 0 - VELOCIDAD_GIRO)
-            pause(1500)   // ajusta este tiempo para que sea aprox. 180° con tu VELOCIDAD_GIRO
+            pause(2292)   // ajusta este tiempo para que sea aprox. 180° con tu VELOCIDAD_GIRO
             motors.largeBC.stop()
 
             console.log("→ Avanzando después del giro de 180°")

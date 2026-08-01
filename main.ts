@@ -1,4 +1,4 @@
-//6
+//5_275eedAAq
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -74,14 +74,16 @@ function buscarBalon() {
             let colorDetectado = sensors.color3.color()
             console.log("Proximity: [" + distancia + "] | Color: [" + colorDetectado + "]")
 
-            // --- Detección combinada: AMBAS condiciones deben cumplirse ---
-            if (distancia == 1 && colorDetectado == ColorSensorColor.White) {
+            // --- BALÓN: cerca (menos de 15) Y blanco ---
+            if (distancia < 15 && colorDetectado == ColorSensorColor.White) {
                 balonEncontrado = true
                 motors.largeBC.stop()
-                console.log("✅ BALÓN detectado (Proximity=1 Y Color=White)")
-            } else if (distancia < 20) {
+                console.log("✅ BALÓN detectado (Proximity<15 Y Color=White)")
+            }
+            // --- OBSTÁCULO: cerca (menos de 20) Y (negro O azul) ---
+            else if (distancia < 20 && (colorDetectado == ColorSensorColor.Black || colorDetectado == ColorSensorColor.Blue)) {
                 obstaculoDetectado = true
-                console.log("⚠️ Obstáculo detectado (no confirmado como balón). Proximity: " + distancia)
+                console.log("⚠️ Obstáculo detectado. Color: [" + colorDetectado + "] Proximity: " + distancia)
             }
 
             loops.pause(50)
@@ -93,7 +95,6 @@ function buscarBalon() {
         if (obstaculoDetectado) {
             marchaAtras()
 
-            // --- Maniobra de esquive: giro de 180° + avance ---
             console.log("→ Ejecutando giro de 180° para esquivar")
             motors.largeBC.stop()
             motors.largeBC.tank(VELOCIDAD_GIRO, 0 - VELOCIDAD_GIRO)

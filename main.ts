@@ -1,4 +1,4 @@
-//6_7
+//6_7_8
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -18,13 +18,24 @@ function marchaAtras() {
     motors.largeBC.tank(0 - VELOCIDAD_AVANCE, 0 - VELOCIDAD_AVANCE)
 
     let distanciaActual = sensors.infrared1.proximity()
-    while (distanciaActual <= 30) {
+    let tiempoRetrocediendo = 0
+
+    while (distanciaActual <= 30 && tiempoRetrocediendo < 15000) {
         distanciaActual = sensors.infrared1.proximity()
-        console.log("Proximity retrocediendo: [" + distanciaActual + "]")
+        console.log("Proximity retrocediendo: [" + distanciaActual + "] | Tiempo: [" + tiempoRetrocediendo + "]")
         loops.pause(50)
+        tiempoRetrocediendo += 50
     }
 
     motors.largeBC.stop()
+
+    if (tiempoRetrocediendo >= 15000) {
+        console.log("⏱️ Tiempo límite alcanzado (15s). Acelerando hacia adelante como escape.")
+        motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+        pause(1500)
+        motors.largeBC.stop()
+    }
+
     console.log("→ Marcha atrás terminada. Proximity final: [" + distanciaActual + "]")
 }
 

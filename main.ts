@@ -56,7 +56,7 @@ function buscarBalon() {
             distancia = sensors.infrared1.proximity()
             console.log("Proximity: [" + distancia + "]")
 
-            if (distancia < 10) {   // ajusta este umbral según pruebas
+            if (distancia < 30) {   // ajusta este umbral según pruebas
                 confirmaciones += 1
                 console.log("   Confirmación " + confirmaciones + "/2")
                 if(confirmaciones >= 2){

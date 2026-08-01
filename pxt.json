@@ -7,18 +7,7 @@
         "ev3": "*"
     },
     "files": [
-        "main.ts",
-        "config.ts",
-        "hardware.ts",
-        "sensors.ts",
-        "movement.ts",
-        "strategy.ts",
-        "attack.ts",
-        "defense.ts",
-        "search.ts",
-        "recovery.ts",
-        "stateMachine.ts",
-        "assets.json"
+        "main.ts"
     ],
     "testFiles": []
 }

@@ -1,4 +1,4 @@
-//5_502
+//5_506
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -66,7 +66,7 @@ function buscarBalon() {
                     motors.largeBC.stop()
                     console.log("✅ BALÓN detectado. Proximity: " + distancia)
                 }
-            } else if (distancia < 20 && distancia>3) {
+            } else if (distancia < 20) {
                 obstaculoDetectado = true
                 console.log("⚠️ Obstáculo detectado (no confirmado como balón). Proximity: " + distancia)
             } else {

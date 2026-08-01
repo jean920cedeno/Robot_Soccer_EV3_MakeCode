@@ -1,4 +1,4 @@
-//5_13
+//5_15
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -96,12 +96,53 @@ let arcoEncontrado = false
 // tu simulador)
 VELOCIDAD_GIRO = 20
 VELOCIDAD_AVANCE = 75
-motors.largeB.setInverted(true)
-motors.largeC.setInverted(true)
 // --- TEST TEMPORAL DEL INFRARROJO ---
 console.log("IR proximity: " + sensors.infrared1.proximity())
 pause(3000)
 // --- SECUENCIA PRINCIPAL ---
+//Test//
+// --- Prueba de inversión de motores (probamos las 4 combinaciones) ---
+console.log("=== TEST SIN NINGUNA INVERSION ===")
+motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+pause(1000)
+motors.largeBC.stop()
+console.log("¿Fue hacia adelante o atrás? (revisa visualmente)")
+pause(2000)
+
+console.log("=== TEST SOLO B INVERTIDO ===")
+motors.largeB.setInverted(true)
+motors.largeC.setInverted(false)
+motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+pause(1000)
+motors.largeBC.stop()
+console.log("¿Fue hacia adelante o atrás?")
+pause(2000)
+
+console.log("=== TEST SOLO C INVERTIDO ===")
+motors.largeB.setInverted(false)
+motors.largeC.setInverted(true)
+motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+pause(1000)
+motors.largeBC.stop()
+console.log("¿Fue hacia adelante o atrás?")
+pause(2000)
+
+console.log("=== TEST AMBOS INVERTIDOS ===")
+motors.largeB.setInverted(true)
+motors.largeC.setInverted(true)
+motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+pause(1000)
+motors.largeBC.stop()
+console.log("¿Fue hacia adelante o atrás?")
+pause(2000)
+
+// --- Prueba del sensor IR sin balón cerca ---
+console.log("=== BASELINE del sensor IR (sin balón a propósito) ===")
+for (let i = 0; i < 5; i++) {
+    console.log("Proximity (sin balón): " + sensors.infrared1.proximity())
+    pause(500)
+}
+////////
 console.log("Iniciando búsqueda de balón...")
 buscarBalon()
 console.log("Balón encontrado. balonEncontrado = " + balonEncontrado)

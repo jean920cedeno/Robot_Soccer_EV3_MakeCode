@@ -1,4 +1,4 @@
-//5_275eedAAq
+//6_7
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -74,16 +74,16 @@ function buscarBalon() {
             let colorDetectado = sensors.color3.color()
             console.log("Proximity: [" + distancia + "] | Color: [" + colorDetectado + "]")
 
-            // --- BALÓN: cerca (menos de 15) Y blanco ---
-            if (distancia < 15 && colorDetectado == ColorSensorColor.White) {
+            // --- BALÓN: cerca (menos de 20) Y blanco ---
+            if (distancia < 20 && colorDetectado == ColorSensorColor.White) {
                 balonEncontrado = true
                 motors.largeBC.stop()
-                console.log("✅ BALÓN detectado (Proximity<15 Y Color=White)")
+                console.log("✅ BALÓN detectado (Proximity<20 Y Color=White)")
             }
-            // --- OBSTÁCULO: cerca (menos de 20) Y (negro O azul) ---
-            else if (distancia < 20 && (colorDetectado == ColorSensorColor.Black || colorDetectado == ColorSensorColor.Blue)) {
+            // --- OBSTÁCULO: solo por distancia ---
+            else if (distancia < 20) {
                 obstaculoDetectado = true
-                console.log("⚠️ Obstáculo detectado. Color: [" + colorDetectado + "] Proximity: " + distancia)
+                console.log("⚠️ Obstáculo detectado (no confirmado como balón). Proximity: " + distancia)
             }
 
             loops.pause(50)

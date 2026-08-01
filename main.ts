@@ -1,34 +1,123 @@
-// --- ESTE ES EL ÚNICO CÓDIGO QUE DEBE EXISTIR EN EL PROGRAMA POR AHORA ---
+//5_16
+brick.showPorts()
+console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
+console.log("Color: " + sensors.color3.color())
+console.log("Ambient: " + sensors.color2.light(LightIntensityMode.Ambient))
+console.log("Color: " + sensors.color2.color())
+let tiempoGiro = 0
+let reflejo = 0
+let balonEncontrado = false
+let distancia = 0
+let UMBRAL_BLANCO = 0
+let VELOCIDAD_GIRO = 0
+let VELOCIDAD_AVANCE = 0
+// --- FASE 4: Empujar el balón hacia el arco ---
+function empujarHaciaArco() {
+    motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+    pause(3000)
+    motors.largeBC.stop()
+}
+// --- FASE 3: Buscar el arco (sensor de color puerto
+// 2) ---
+function buscarArco() {
+    console.log("→ Entrando a buscarArco()")
+    motors.largeBC.tank(VELOCIDAD_GIRO, 0 - VELOCIDAD_GIRO)
+    console.log("→ Motores girando para buscar arco")
+    
+    sensors.color2.onColorDetected(ColorSensorColor.Blue, function () {
+        arcoEncontrado = true
+        motors.largeBC.stop()
+        console.log("✅ ARCO DETECTADO (azul)")
+    })
+    
+    while (!(arcoEncontrado)) {
+        loops.pause(50)
+    }
+    console.log("→ Saliendo de buscarArco()")
+}
+// --- FASE 1: Buscar el balón blanco girando 360° ---
+function buscarBalon() {
+    console.log("→ Entrando a buscarBalon()")
+    let intentos = 0
 
-console.log("TEST 1: sin inversion")
-motors.largeB.setInverted(false)
-motors.largeC.setInverted(false)
-motors.largeBC.tank(75, 75)
-pause(1500)
-motors.largeBC.stop()
-pause(3000)   // tiempo de sobra para que confirmes visualmente
+    while (!(balonEncontrado)) {
+        intentos += 1
+        console.log("→ Intento #" + intentos + " del loop externo")
 
-console.log("TEST 2: solo B invertido")
-motors.largeB.setInverted(true)
-motors.largeC.setInverted(false)
-motors.largeBC.tank(75, 75)
-pause(1500)
-motors.largeBC.stop()
+        tiempoGiro = 0
+        let direccion = Math.random() < 0.5 ? 1 : -1
+        console.log("→ Dirección elegida: " + direccion)
+
+        motors.largeBC.tank(VELOCIDAD_GIRO * direccion, 0 - VELOCIDAD_GIRO * direccion)
+        console.log("→ Girando...")
+
+        while (tiempoGiro < 3000 && !(balonEncontrado)) {
+            distancia = sensors.infrared1.proximity()
+            console.log("   Proximity: " + distancia + " | tiempoGiro: " + tiempoGiro)
+
+            if (distancia < 50) {   // ajusta este umbral según pruebas
+                balonEncontrado = true
+                motors.largeBC.stop()
+                console.log("✅ BALÓN detectado. Proximity: " + distancia)
+            }
+            loops.pause(50)
+            tiempoGiro += 50
+        }
+
+        console.log("→ Salió del while interno. balonEncontrado=" + balonEncontrado)
+
+        if (!(balonEncontrado)) {
+            console.log("→ No encontrado, avanzando un poco...")
+            motors.largeBC.stop()
+            motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+            pause(10)
+            motors.largeBC.stop()
+        }
+    }
+    console.log("→ Saliendo de buscarBalon(). balonEncontrado=" + balonEncontrado)
+}
+// --- FASE 2: Acercarse al balón ---
+function acercarseAlBalon() {
+    console.log("→ Entrando a acercarseAlBalon()")
+    motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+    distancia = sensors.infrared1.proximity()
+    console.log("→ Distancia inicial: " + distancia)
+
+    while (distancia > 10) {
+        distancia = sensors.infrared1.proximity()
+        console.log("   Distancia actual: " + distancia)
+        loops.pause(50)
+    }
+    motors.largeBC.stop()
+    console.log("→ Saliendo de acercarseAlBalon(). Distancia final: " + distancia)
+}
+let arcoEncontrado = false
+// Configuración de umbrales (ajusta según pruebas en
+// tu simulador)
+VELOCIDAD_GIRO = 20
+VELOCIDAD_AVANCE = 75
+// --- TEST TEMPORAL DEL INFRARROJO ---
+console.log("IR proximity: " + sensors.infrared1.proximity())
 pause(3000)
+// --- SECUENCIA PRINCIPAL ---
+console.log("Iniciando búsqueda de balón...")
+buscarBalon()
+console.log("Balón encontrado. balonEncontrado = " + balonEncontrado)
 
-console.log("TEST 3: solo C invertido")
-motors.largeB.setInverted(false)
-motors.largeC.setInverted(true)
-motors.largeBC.tank(75, 75)
-pause(1500)
-motors.largeBC.stop()
-pause(3000)
+pause(100)
 
-console.log("TEST 4: ambos invertidos")
-motors.largeB.setInverted(true)
-motors.largeC.setInverted(true)
-motors.largeBC.tank(75, 75)
-pause(1500)
-motors.largeBC.stop()
+console.log("Acercándose al balón...")
+acercarseAlBalon()
+console.log("Ya cerca del balón.")
 
-brick.showString("Tests terminados", 1)
+console.log("Buscando arco...")
+buscarArco()
+console.log("Arco encontrado. arcoEncontrado = " + arcoEncontrado)
+
+pause(100)
+
+console.log("Empujando hacia el arco...")
+empujarHaciaArco()
+console.log("Tarea completada.")
+
+brick.showString("Tarea completada", 1)

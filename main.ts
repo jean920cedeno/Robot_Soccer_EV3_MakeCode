@@ -1,7 +1,9 @@
-//5_11
+//5_13
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
+console.log("Ambient: " + sensors.color2.light(LightIntensityMode.Ambient))
+console.log("Color: " + sensors.color2.color())
 let tiempoGiro = 0
 let reflejo = 0
 let balonEncontrado = false
@@ -37,36 +39,42 @@ function buscarArco() {
 function buscarBalon() {
     console.log("→ Entrando a buscarBalon()")
     let intentos = 0
-    
+
     while (!(balonEncontrado)) {
         intentos += 1
-        console.log("→ Intento #" + intentos)
-        
+        console.log("→ Intento #" + intentos + " del loop externo")
+
         tiempoGiro = 0
         let direccion = Math.random() < 0.5 ? 1 : -1
+        console.log("→ Dirección elegida: " + direccion)
+
         motors.largeBC.tank(VELOCIDAD_GIRO * direccion, 0 - VELOCIDAD_GIRO * direccion)
-        
+        console.log("→ Girando...")
+
         while (tiempoGiro < 3000 && !(balonEncontrado)) {
-            let colorDetectado = sensors.color3.color()
-            console.log("Color detectado: " + colorDetectado)
-            
-            if (colorDetectado == ColorSensorColor.White) {
+            distancia = sensors.infrared1.proximity()
+            console.log("   Proximity: " + distancia + " | tiempoGiro: " + tiempoGiro)
+
+            if (distancia < 50) {   // ajusta este umbral según pruebas
                 balonEncontrado = true
                 motors.largeBC.stop()
-                console.log("✅ BALÓN (blanco) detectado")
+                console.log("✅ BALÓN detectado. Proximity: " + distancia)
             }
             loops.pause(50)
             tiempoGiro += 50
         }
-        
+
+        console.log("→ Salió del while interno. balonEncontrado=" + balonEncontrado)
+
         if (!(balonEncontrado)) {
+            console.log("→ No encontrado, avanzando un poco...")
             motors.largeBC.stop()
             motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
             pause(10)
             motors.largeBC.stop()
         }
     }
-    console.log("→ Saliendo de buscarBalon()")
+    console.log("→ Saliendo de buscarBalon(). balonEncontrado=" + balonEncontrado)
 }
 // --- FASE 2: Acercarse al balón ---
 function acercarseAlBalon() {
@@ -74,7 +82,7 @@ function acercarseAlBalon() {
     motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
     distancia = sensors.infrared1.proximity()
     console.log("→ Distancia inicial: " + distancia)
-    
+
     while (distancia > 10) {
         distancia = sensors.infrared1.proximity()
         console.log("   Distancia actual: " + distancia)
@@ -86,11 +94,9 @@ function acercarseAlBalon() {
 let arcoEncontrado = false
 // Configuración de umbrales (ajusta según pruebas en
 // tu simulador)
-UMBRAL_BLANCO = 70
 VELOCIDAD_GIRO = 20
 VELOCIDAD_AVANCE = 75
-
-motors.largeB.setInverted(true)   // ← LÍNEA AGREGADA: corrige la dirección del motor invertido
+motors.largeB.setInverted(true)
 motors.largeC.setInverted(true)
 // --- TEST TEMPORAL DEL INFRARROJO ---
 console.log("IR proximity: " + sensors.infrared1.proximity())

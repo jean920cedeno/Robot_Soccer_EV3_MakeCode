@@ -50,7 +50,8 @@ function buscarBalon() {
 
         motors.largeBC.tank(VELOCIDAD_GIRO * direccion, 0 - VELOCIDAD_GIRO * direccion)
         console.log("→ Girando...")
-
+        
+        let confirmaciones = 0
         while (tiempoGiro < 3000 && !(balonEncontrado)) {
             distancia = sensors.infrared1.proximity()
             console.log("Proximity: [" + distancia + "]")

@@ -1,4 +1,4 @@
-//5_26
+//5_30
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -50,34 +50,54 @@ function buscarBalon() {
 
         motors.largeBC.tank(VELOCIDAD_GIRO * direccion, 0 - VELOCIDAD_GIRO * direccion)
         console.log("→ Girando...")
-        
+
         let confirmaciones = 0
-        while (tiempoGiro < 3000 && !(balonEncontrado)) {
+        let obstaculoDetectado = false
+
+        while (tiempoGiro < 3000 && !(balonEncontrado) && !(obstaculoDetectado)) {
             distancia = sensors.infrared1.proximity()
             console.log("Proximity: [" + distancia + "]")
 
-            if (distancia < 31) {   // ajusta este umbral según pruebas
+            if (distancia < 10) {
                 confirmaciones += 1
                 console.log("   Confirmación " + confirmaciones + "/2")
-                if(confirmaciones >= 2){
+                if (confirmaciones >= 2) {
                     balonEncontrado = true
                     motors.largeBC.stop()
                     console.log("✅ BALÓN detectado. Proximity: " + distancia)
-                }else{
-                    confirmaciones = 0 
                 }
+            } else if (distancia < 20) {
+                obstaculoDetectado = true
+                console.log("⚠️ Obstáculo detectado (no confirmado como balón). Proximity: " + distancia)
+            } else {
+                confirmaciones = 0
             }
+
             loops.pause(50)
             tiempoGiro += 50
         }
 
-        console.log("→ Salió del while interno. balonEncontrado=" + balonEncontrado)
+        console.log("→ Salió del while interno. balonEncontrado=" + balonEncontrado + " obstaculoDetectado=" + obstaculoDetectado)
 
-        if (!(balonEncontrado)) {
+        if (obstaculoDetectado) {
+            // --- Maniobra de esquive: giro de 180° + avance ---
+            console.log("→ Ejecutando giro de 180° para esquivar")
+            motors.largeBC.stop()
+            motors.largeBC.tank(VELOCIDAD_GIRO, 0 - VELOCIDAD_GIRO)
+            pause(1500)   // ajusta este tiempo para que sea aprox. 180° con tu VELOCIDAD_GIRO
+            motors.largeBC.stop()
+
+            console.log("→ Avanzando después del giro de 180°")
+            motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
+            pause(800)
+            motors.largeBC.stop()
+
+            console.log("→ Volviendo a estado de búsqueda por giros")
+        } else if (!(balonEncontrado)) {
             console.log("→ No encontrado, avanzando un poco...")
             motors.largeBC.stop()
             motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
-            pause(1500)
+            pause(10)
             motors.largeBC.stop()
         }
     }

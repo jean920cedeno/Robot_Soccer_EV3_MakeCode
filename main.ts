@@ -1,4 +1,4 @@
-//5_25
+//5_26
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -77,7 +77,7 @@ function buscarBalon() {
             console.log("→ No encontrado, avanzando un poco...")
             motors.largeBC.stop()
             motors.largeBC.tank(VELOCIDAD_AVANCE, VELOCIDAD_AVANCE)
-            pause(500)
+            pause(1500)
             motors.largeBC.stop()
         }
     }

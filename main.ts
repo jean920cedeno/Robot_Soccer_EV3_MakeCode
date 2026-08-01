@@ -1,4 +1,4 @@
-//5_16
+//5_17
 brick.showPorts()
 console.log("Ambient: " + sensors.color3.light(LightIntensityMode.Ambient))
 console.log("Color: " + sensors.color3.color())
@@ -53,12 +53,18 @@ function buscarBalon() {
 
         while (tiempoGiro < 3000 && !(balonEncontrado)) {
             distancia = sensors.infrared1.proximity()
-            console.log("   Proximity: " + distancia + " | tiempoGiro: " + tiempoGiro)
+            console.log("Proximity: [" + distancia + "]")
 
-            if (distancia < 50) {   // ajusta este umbral según pruebas
-                balonEncontrado = true
-                motors.largeBC.stop()
-                console.log("✅ BALÓN detectado. Proximity: " + distancia)
+            if (distancia < 10) {   // ajusta este umbral según pruebas
+                confirmaciones += 1
+                console.log("   Confirmación " + confirmaciones + "/2")
+                if(confirmaciones >= 2){
+                    balonEncontrado = true
+                    motors.largeBC.stop()
+                    console.log("✅ BALÓN detectado. Proximity: " + distancia)
+                }else{
+                    confirmaciones = 0 
+                }
             }
             loops.pause(50)
             tiempoGiro += 50

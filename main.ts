@@ -1,3 +1,4 @@
+brick.showPorts()
 console.log("=== TEST HiTechnic IRSeeker (puerto 2) ===")
 
 for (let i = 0; i < 10; i++) {

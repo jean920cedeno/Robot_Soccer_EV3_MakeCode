@@ -1,11 +1,4 @@
-// --- TEST BÁSICO: Proximidad sensor infrarrojo puerto 2 ---
-console.log("=== INICIANDO TEST DE PROXIMIDAD (puerto 2) ===")
-
-for (let i = 0; i < 20; i++) {
-    let p = sensors.infrared2.proximity()
-    console.log("Proximity: [" + p + "]  (i=" + i + ")")
-    pause(300)
-}
-
-console.log("=== TEST TERMINADO ===")
-brick.showString("Test proximidad listo", 1)
+console.log("=== VERIFICANDO PUERTO 2 ===")
+brick.showPorts()
+pause(5000)
+console.log("Revisa la pantalla del Brick para ver qué tipo de sensor detecta en el puerto 2")

@@ -1,29 +1,23 @@
-console.log("=== TEST: ¿CAMBIA EL VALOR REALMENTE? ===")
-
-console.log("--- SIN balón ---")
+console.log("=== TEST 1: apuntando al PISO/CÉSPED (sin balón, sin pared) ===")
 for (let i = 0; i < 5; i++) {
-    console.log("Sin balón: [" + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0) + "]")
+    let bytes = sensors.infrared3.getBytes()
+    console.log("Piso: [" + bytes + "]")
     pause(300)
 }
 
-console.log("--- Ahora pon el balón AL FRENTE CENTRADO ---")
+console.log("=== TEST 2: apuntando a una PARED cercana ===")
 pause(3000)
 for (let i = 0; i < 5; i++) {
-    console.log("Centrado: [" + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0) + "]")
+    let bytes = sensors.infrared3.getBytes()
+    console.log("Pared: [" + bytes + "]")
     pause(300)
 }
 
-console.log("--- Ahora mueve el balón a la IZQUIERDA ---")
+console.log("=== TEST 3: apuntando al BALÓN ===")
 pause(3000)
 for (let i = 0; i < 5; i++) {
-    console.log("Izquierda: [" + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0) + "]")
-    pause(300)
-}
-
-console.log("--- Ahora mueve el balón a la DERECHA ---")
-pause(3000)
-for (let i = 0; i < 5; i++) {
-    console.log("Derecha: [" + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0) + "]")
+    let bytes = sensors.infrared3.getBytes()
+    console.log("Balón: [" + bytes + "]")
     pause(300)
 }
 

@@ -3,7 +3,7 @@ sensors.infrared2.setMode(InfraredSensorMode.Proximity);
 sensors.infrared4.setMode(InfraredSensorMode.Proximity);
 
 forever(function () {
-    // --- Sensor puerto 2 ---
+    // --- Sensor puerto 245 ---
     let direccionBalon2 = sensors.infrared2.proximity();
     console.log("Lectura IR (puerto 2): " + direccionBalon2);
 

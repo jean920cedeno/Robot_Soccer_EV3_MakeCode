@@ -1,4 +1,4 @@
-// Configuramos los puertos 2 y 4 para que MakeCode trate a los sensores como IR nativo de LEGO
+// Configuramos los puertos 2 y 4 para que MakeCode trate a los sensores como IR nativo de LEGOooo
 sensors.infrared2.setMode(InfraredSensorMode.Proximity);
 sensors.infrared4.setMode(InfraredSensorMode.Proximity);
 

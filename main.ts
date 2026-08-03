@@ -1,12 +1,30 @@
-// --- TEST: explorar modos del sensor (puerto 3) ---
-console.log("=== EXPLORANDO MODOS - PUERTO 3 ===")
+console.log("=== TEST: ¿CAMBIA EL VALOR REALMENTE? ===")
 
-for (let modo = 0; modo <= 5; modo++) {
-    sensors.infrared3.setMode(modo)
-    pause(200)
-    let numero = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0)
-    console.log("Modo " + modo + " → getNumber(): [" + numero + "]")
-    pause(500)
+console.log("--- SIN balón ---")
+for (let i = 0; i < 5; i++) {
+    console.log("Sin balón: [" + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0) + "]")
+    pause(300)
+}
+
+console.log("--- Ahora pon el balón AL FRENTE CENTRADO ---")
+pause(3000)
+for (let i = 0; i < 5; i++) {
+    console.log("Centrado: [" + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0) + "]")
+    pause(300)
+}
+
+console.log("--- Ahora mueve el balón a la IZQUIERDA ---")
+pause(3000)
+for (let i = 0; i < 5; i++) {
+    console.log("Izquierda: [" + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0) + "]")
+    pause(300)
+}
+
+console.log("--- Ahora mueve el balón a la DERECHA ---")
+pause(3000)
+for (let i = 0; i < 5; i++) {
+    console.log("Derecha: [" + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0) + "]")
+    pause(300)
 }
 
 console.log("=== TEST TERMINADO ===")

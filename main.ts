@@ -1,4 +1,20 @@
-console.log("=== VERIFICANDO PUERTO 2 ===")
-brick.showPorts()
-pause(5000)
-console.log("Revisa la pantalla del Brick para ver qué tipo de sensor detecta en el puerto 2")
+console.log("=== TEST HiTechnic IRSeeker (puerto 2) ===")
+
+for (let i = 0; i < 10; i++) {
+    sensors.infrared2.setMode(0)
+    let numero = sensors.infrared2.getNumber(NumberFormat.UInt8LE, 0)
+    console.log("Puerto 2 - getNumber(): [" + numero + "]  (i=" + i + ")")
+    pause(300)
+}
+
+console.log("=== TEST 1 TERMINADO ===")
+
+console.log("=== TEST EV3 Infrared Sensor (puerto 1) ===")
+
+for (let i = 0; i < 10; i++) {
+    let proximidad = sensors.infrared1.proximity()
+    console.log("Puerto 1 - proximity(): [" + proximidad + "]  (i=" + i + ")")
+    pause(300)
+}
+
+console.log("=== TEST 2 TERMINADO ===")

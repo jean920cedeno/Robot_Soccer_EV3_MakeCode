@@ -1,36 +1,35 @@
-console.log("=== TEST 1: PISO/CÉSPED ===")
-for (let i = 0; i < 3; i++) {
-    let bytes = sensors.infrared3.getBytes()
-    let texto = ""
-    for (let j = 0; j < bytes.length; j++) {
-        texto += bytes.getUint8(j) + " "
-    }
-    console.log("Piso byte por byte: [" + texto + "]")
-    pause(300)
-}
+// Configuramos los puertos 2 y 4 para que MakeCode trate a los sensores como IR nativo de LEGO
+sensors.infrared2.setMode(InfraredSensorMode.Proximity);
+sensors.infrared4.setMode(InfraredSensorMode.Proximity);
 
-console.log("=== TEST 2: PARED ===")
-pause(3000)
-for (let i = 0; i < 3; i++) {
-    let bytes = sensors.infrared3.getBytes()
-    let texto = ""
-    for (let j = 0; j < bytes.length; j++) {
-        texto += bytes.getUint8(j) + " "
-    }
-    console.log("Pared byte por byte: [" + texto + "]")
-    pause(300)
-}
+forever(function () {
+    // --- Sensor puerto 2 ---
+    let direccionBalon2 = sensors.infrared2.proximity();
+    console.log("Lectura IR (puerto 2): " + direccionBalon2);
 
-console.log("=== TEST 3: BALÓN ===")
-pause(3000)
-for (let i = 0; i < 3; i++) {
-    let bytes = sensors.infrared3.getBytes()
-    let texto = ""
-    for (let j = 0; j < bytes.length; j++) {
-        texto += bytes.getUint8(j) + " "
+    if (direccionBalon2 == 0) {
+        console.log("Puerto 2 - Estado: No detectado");
+    } else if (direccionBalon2 > 45 && direccionBalon2 < 55) {
+        console.log("Puerto 2 - Estado: Al frente");
+    } else if (direccionBalon2 <= 45) {
+        console.log("Puerto 2 - Estado: Izquierda");
+    } else if (direccionBalon2 >= 55) {
+        console.log("Puerto 2 - Estado: Derecha");
     }
-    console.log("Balón byte por byte: [" + texto + "]")
-    pause(300)
-}
 
-console.log("=== TEST TERMINADO ===")
+    // --- Sensor puerto 4 ---
+    let direccionBalon4 = sensors.infrared4.proximity();
+    console.log("Lectura IR (puerto 4): " + direccionBalon4);
+
+    if (direccionBalon4 == 0) {
+        console.log("Puerto 4 - Estado: No detectado");
+    } else if (direccionBalon4 > 45 && direccionBalon4 < 55) {
+        console.log("Puerto 4 - Estado: Al frente");
+    } else if (direccionBalon4 <= 45) {
+        console.log("Puerto 4 - Estado: Izquierda");
+    } else if (direccionBalon4 >= 55) {
+        console.log("Puerto 4 - Estado: Derecha");
+    }
+
+    pause(100);
+});

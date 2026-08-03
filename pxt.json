@@ -5,9 +5,9 @@
     "license": "MIT",
     "dependencies": {
         "ev3": "*"
+        "pxt-hitechnic": "github:tu-usuario/pxt-hitechnic#v1.0.0"
     },
     "files": [
-        "hitechnic.ts",
         "main.ts"
     ],
     "testFiles": []

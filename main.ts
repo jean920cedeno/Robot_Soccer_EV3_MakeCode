@@ -1,13 +1,12 @@
-// --- TEST: IR Seeker V2 en puerto 3 y puerto 4 ---
-console.log("=== INICIANDO TEST IR SEEKER ===")
+// --- TEST: explorar modos del sensor (puerto 3) ---
+console.log("=== EXPLORANDO MODOS - PUERTO 3 ===")
 
-for (let i = 0; i < 15; i++) {
-    let direccion3 = sensors.irSeeker3.getDirection()   // ⚠️ ajustar nombre si es distinto
-    let direccion4 = sensors.irSeeker4.getDirection()   // ⚠️ ajustar nombre si es distinto
-
-    console.log("Puerto 3: [" + direccion3 + "] | Puerto 4: [" + direccion4 + "]  (i=" + i + ")")
-    pause(300)
+for (let modo = 0; modo <= 5; modo++) {
+    sensors.infrared3.setMode(modo)
+    pause(200)
+    let numero = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0)
+    console.log("Modo " + modo + " → getNumber(): [" + numero + "]")
+    pause(500)
 }
 
 console.log("=== TEST TERMINADO ===")
-brick.showString("Test IR Seeker listo", 1)

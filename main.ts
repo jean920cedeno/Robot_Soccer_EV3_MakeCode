@@ -19,7 +19,7 @@ console.log("=== TEST 2 TERMINADO ===")
 console.log("=== TEST EV3 Color Sensor (puerto 3) ===")
 for (let i = 0; i < 10; i++) {
     let color = sensors.color3.color()
-    let luzReflejada = sensors.color3.reflectedLight(LightIntensityMode.Reflected)
+    let luzReflejada = sensors.color3.reflectedLight()
     let luzAmbiente = sensors.color3.ambientLight()
     console.log("Puerto 3 - color(): [" + color + "]  reflectedLight(): [" + luzReflejada + "]  ambientLight(): [" + luzAmbiente + "]  (i=" + i + ")")
     pause(300)

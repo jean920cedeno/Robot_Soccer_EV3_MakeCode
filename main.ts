@@ -1,23 +1,20 @@
-console.log("=== INICIANDO TEST COMBINADO: COLOR AZUL (P3) + DISTANCIA IR (P1) ===")
+console.log("=== INICIANDO TEST DUAL: INFRARED (PUERTO 3) + INFRARED (PUERTO 1) ===")
 
 let INTERVALO_MS = 300
 let TOTAL_ITERACIONES = 400 // 2 minutos
 
 for (let i = 1; i <= TOTAL_ITERACIONES; i++) {
-    let colorDetectado = sensors.color3.color()
-    let proximidad = sensors.infrared1.proximity()
+    let proximidad3 = sensors.infrared3.proximity()
+    let proximidad1 = sensors.infrared1.proximity()
     let segundos = Math.floor((i * INTERVALO_MS) / 1000)
 
-    // Evaluamos si el sensor de color ve AZUL (ColorSensorColor.Blue equivale a 2)
-    let esAzul = (colorDetectado == ColorSensorColor.Blue)
-
-    if (esAzul) {
-        console.log("[" + segundos + "s / 120s] ¡AZUL DETECTADO! - Distancia/Proximidad (Puerto 1): " + proximidad + "%")
+    if (proximidad3 < 100) {
+        console.log("[" + segundos + "s / 120s] ¡P3 DETECTA ALGO! Proximidad P3: " + proximidad3 + "% | Proximidad P1: " + proximidad1 + "%")
     } else {
-        console.log("[" + segundos + "s / 120s] Sin Azul (Color ID: " + colorDetectado + ") - Distancia (Puerto 1): " + proximidad + "%")
+        console.log("[" + segundos + "s / 120s] P3 en el vacío (100%) | Proximidad P1: " + proximidad1 + "%")
     }
 
     pause(INTERVALO_MS)
 }
 
-console.log("=== TEST COMBINADO FINALIZADO ===")
+console.log("=== TEST DUAL FINALIZADO ===")

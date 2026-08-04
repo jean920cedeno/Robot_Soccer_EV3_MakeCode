@@ -1,26 +1,23 @@
-console.log("=== TEST HiTechnic IRSeeker (Puerto 4) ===")
+console.log("=== INICIANDO TEST COMBINADO: COLOR AZUL (P3) + DISTANCIA IR (P1) ===")
 
-let INTERVALO_MS = 500
-let TOTAL_ITERACIONES = 240 // 2 minutos (240 x 500ms)
-
-// Aseguramos el modo de lectura (Modo 0 suele ser AC para pelotas IR)
-sensors.infrared4.setMode(0)
+let INTERVALO_MS = 300
+let TOTAL_ITERACIONES = 400 // 2 minutos
 
 for (let i = 1; i <= TOTAL_ITERACIONES; i++) {
-    // getNumber con UInt8LE en desplazamiento 0 lee la DIRECCIÓN (0 a 9)
-    let direccion = sensors.infrared4.getNumber(NumberFormat.UInt8LE, 0)
-    
+    let colorDetectado = sensors.color3.color()
+    let proximidad = sensors.infrared1.proximity()
     let segundos = Math.floor((i * INTERVALO_MS) / 1000)
 
-    if (direccion === 0) {
-        console.log("[" + segundos + "s / 120s] Puerto 4 - IRSeeker: No detecta señal IR (0)")
-    } else if (direccion === 5) {
-        console.log("[" + segundos + "s / 120s] Puerto 4 - IRSeeker: ¡Emisor IR AL CENTRO! (5)")
+    // Evaluamos si el sensor de color ve AZUL (ColorSensorColor.Blue equivale a 2)
+    let esAzul = (colorDetectado == ColorSensorColor.Blue)
+
+    if (esAzul) {
+        console.log("[" + segundos + "s / 120s] ¡AZUL DETECTADO! - Distancia/Proximidad (Puerto 1): " + proximidad + "%")
     } else {
-        console.log("[" + segundos + "s / 120s] Puerto 4 - IRSeeker: Señal en Dirección [" + direccion + "]")
+        console.log("[" + segundos + "s / 120s] Sin Azul (Color ID: " + colorDetectado + ") - Distancia (Puerto 1): " + proximidad + "%")
     }
 
     pause(INTERVALO_MS)
 }
 
-console.log("=== TEST COMPLETO ===")
+console.log("=== TEST COMBINADO FINALIZADO ===")

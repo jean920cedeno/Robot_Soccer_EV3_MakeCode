@@ -1,68 +1,355 @@
-console.log("=== FILTRO ESTRICTO: 9 DIRECCIONES VÁLIDAS CON INTENSIDAD MINIMA = 8 ===")
+// Muestra los puertos conectados simplemnete validacion
+brick.showPorts()
 
-sensors.infrared3.setMode(0) // Puerto 3: Pelota (Modo AC)
-sensors.infrared2.setMode(1) // Puerto 2: Banner (Modo DC)
+// === CONFIGURACION DE SENSORES INFRARROJOS (SEEKER) ===
+// Reemplazamos los sensores de color por sensores IR en modo Seeker
+sensors.infrared3.setMode(0) // Puerto 3: Pelota (Modo AC) -> antes color2
+sensors.infrared2.setMode(1) // Puerto 2: Banner/Arco (Modo DC) -> antes color3
 
-const INTENSIDAD_MINIMA = 8 
-const UMBRAL_OBSTACULO = 10 
+//Depencia: Dependemos de una posicion incial adecuada, esto se hizo por tema de precision de sensores, aun no hemos
+//aprendido como usarlos correctamente, hace 4 dias descubrimos el tema de los sensores y que existen diferentes tipos
+//por eso esta implementacion algo apurada, pero haciendo varios intentos, si el robot se queda entretenido en una pared, u otro 
+//objeto este bucle puede ser infito por nuestra condicion de ataque repitivo la cual nos divertimos implementadola,
+// pero esto tambien nos juega en contra asi que toca reiniciar,
+//si las condiciones adecuadas se cumplen podemos asegurar un gol que fue el objetivo
+//de nuestro grupo en este pequeño periodo de tiempo (Como justificacion a la cantidad de lineas 
+//debemos decir que estas fueron escritas y probadas, bajo el efecto de la cafeina, falta de sueño, entre otros factores
+//hemos atravesado estos 2 dias, incluyendo el rediseño del robot.)
 
-let ciclosBusqueda = 0
-const MAX_CICLOS_GIRO = 15 
+//Definicion de estados, variables de velocidad y tiempo
+let balonEncontrado = false
+let arcoEncontrado = false
+let distancia = 0
+let VELOCIDAD_MAXIMA = 100
+let VELOCIDAD_AVANCE = 75
+let VELOCIDAD_APROXIMACION = 40
+let VELOCIDAD_GIRO = 25
+let TIEMPO_ATAQUE_INICIAL = 5000
+let TIEMPO_BUSQUEDA_GIRO = 3000
+let TIEMPO_EXPLORACION = 1500
+let TIEMPO_ATAQUE = 2500
+let TIEMPO_EMPUJE = 700
+let TIEMPO_RETROCESO = 300
 
-basic.forever(function () {
-    let proximidadObstaculo = sensors.infrared1.proximity()
-    let dirBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0)
-    let fuerzaBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 6)
-    let dirBanner = sensors.infrared2.getNumber(NumberFormat.UInt8LE, 0)
+// Distancias de deteccion, se fueron modificando en pruebas y estas fueron las que generaban el comportamiento que mas nos agradaba
+let DISTANCIA_DETECCION = 30
+let DISTANCIA_CONTACTO = 8
 
-    // Acepta cualquier dirección (1 a 9), PERO exige sí o sí fuerza >= 8
-    let hayPelota = (dirBalon > 0) && (fuerzaBalon >= INTENSIDAD_MINIMA)
+// Umbral de intensidad para confirmar que la pelota es real y no ruido del sensor IR
+let INTENSIDAD_MINIMA = 8
 
-    // --- PRIORIDAD 1: OBSTÁCULO REAL ---
-    if (!hayPelota && proximidadObstaculo < UMBRAL_OBSTACULO) {
-        console.log("¡OBSTÁCULO DETECTADO! (Prox: " + proximidadObstaculo + "%). Marcha atrás 5s...")
-        motors.largeBC.tank(-50, -50)
-        pause(500)
-        ciclosBusqueda = 0
-    } 
+// Variables de lectura de los sensores IR seeker
+let dirBalon = 0
+let fuerzaBalon = 0
+let dirBanner = 0
 
-    // --- PRIORIDAD 2: BUSCAR PELOTA ---
-    else if (!hayPelota) {
-        ciclosBusqueda++
+// Detiene el robot de golpe
+function detener() {
+    motors.largeBC.stop()
+}
 
-        if (ciclosBusqueda >= MAX_CICLOS_GIRO) {
-            console.log("Reubicando robot tras 15 ciclos...")
-            motors.largeBC.tank(40, 40)
-            pause(2000)
-            ciclosBusqueda = 0
-        } else {
-            motors.largeBC.tank(15, -15) // Giro lento
+// Avanza con la velocidad indicada 
+function avanzar(velocidad: number) {
+    motors.largeBC.tank(velocidad, velocidad)
+}
+
+// Retrocede con la velocidad indicada 
+function retroceder(velocidad: number) {
+    motors.largeBC.tank(0 - velocidad, 0 - velocidad)
+}
+
+// Gira sobre su propio eje
+function girar(direccion: number) {
+    motors.largeBC.tank(
+        VELOCIDAD_GIRO * direccion,
+        (0 - VELOCIDAD_GIRO) * direccion
+    )
+}
+
+// Detecta una posible pelota usando el sensor IR3 en modo seeker (antes: color2/color3)
+// Solo se confirma si hay direccion valida (1-9) Y la fuerza de senal es suficiente
+function pelotaDetectadaPorSensor() {
+    dirBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0)
+    fuerzaBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 6)
+
+    return dirBalon > 0 && fuerzaBalon >= INTENSIDAD_MINIMA
+}
+
+// Detecta el arco (banner) usando el sensor IR2 en modo seeker (antes: color2/color3 == Blue)
+function arcoDetectadoPorSensor() {
+    dirBanner = sensors.infrared2.getNumber(NumberFormat.UInt8LE, 0)
+
+    return dirBanner > 0
+}
+
+// Detecta cualquier posible objetivo.
+function objetivoDetectado() {
+    distancia = sensors.infrared1.proximity()
+
+    return distancia < DISTANCIA_DETECCION ||
+        pelotaDetectadaPorSensor()
+}
+
+// Ejecuta el ataque inicial agresivo 
+function ataqueInicial() {
+    console.log("Iniciando ataque inicial")
+
+    let tiempo = 0
+    avanzar(VELOCIDAD_MAXIMA)
+
+    while (tiempo < TIEMPO_ATAQUE_INICIAL) {
+        distancia = sensors.infrared1.proximity()
+
+        console.log(
+            "Ataque inicial - IR1: " +
+            distancia +
+            " Tiempo: " +
+            tiempo
+        )
+
+        loops.pause(50)
+        tiempo += 50
+    }
+
+    detener()
+    console.log("Ataque inicial finalizado")
+}
+
+// Ataca cualquier objeto detectado es decir somos salvajes
+function atacarObjetivo() {
+    console.log("Iniciando ataque al objetivo")
+
+    let tiempo = 0
+    avanzar(VELOCIDAD_MAXIMA)
+
+    while (tiempo < TIEMPO_ATAQUE) {
+        distancia = sensors.infrared1.proximity()
+
+        console.log(
+            "Ataque - IR1: " +
+            distancia +
+            " Tiempo: " +
+            tiempo
+        )
+
+        // El objetivo está muy cerca.
+        if (distancia <= DISTANCIA_CONTACTO) {
+            console.log("Contacto")
+            break
         }
-    } 
 
-    // --- PRIORIDAD 3: PELOTA CONFIRMADA (FUERZA >= 8) ---
-    else {
-        ciclosBusqueda = 0 
+        loops.pause(50)
+        tiempo += 50
+    }
 
-        if (dirBalon !== 5) {
-            console.log("Pelota confirmada (Fuerza: " + fuerzaBalon + "). Reorientando (Dir: " + dirBalon + ")...")
-            if (dirBalon < 5) {
-                motors.largeBC.tank(12, 30) // Izquierda (direcciones 1, 2, 3, 4)
-            } else {
-                motors.largeBC.tank(30, 12) // Derecha (direcciones 6, 7, 8, 9)
+    // Mantenemos potencia
+    avanzar(VELOCIDAD_MAXIMA)
+    pause(TIEMPO_EMPUJE)
+
+    detener()
+    balonEncontrado = true
+
+    console.log("Ataque finalizado")
+}
+
+// Avanzamos mientras buscamos
+function avanzarBuscando(tiempoMaximo: number, velocidad: number) {
+    let tiempo = 0
+    avanzar(velocidad)
+
+    while (tiempo < tiempoMaximo) {
+        distancia = sensors.infrared1.proximity()
+
+        if (objetivoDetectado()) {
+            detener()
+            console.log("Objetivo detectado durante el avance")
+
+            atacarObjetivo()
+            return true
+        }
+
+        loops.pause(50)
+        tiempo += 50
+    }
+
+    detener()
+    return false
+}
+
+// Busca una pelota o cualquier objeto (Comportamiento Salvaje)
+function buscarBalon() {
+    console.log("Buscando objetivo")
+
+    balonEncontrado = false
+
+    while (!balonEncontrado) {
+        let tiempoGiro = 0
+        let encontrado = false
+
+        // Seleccionar una direccion random para darle movimiento
+        let direccion = Math.random() < 0.5 ? 1 : -1
+
+        girar(direccion)
+
+        while (
+            tiempoGiro < TIEMPO_BUSQUEDA_GIRO &&
+            !encontrado
+        ) {
+            distancia = sensors.infrared1.proximity()
+
+            console.log(
+                "Busqueda - IR1: " +
+                distancia +
+                " DirBalon: " +
+                dirBalon +
+                " FuerzaBalon: " +
+                fuerzaBalon
+            )
+
+            if (objetivoDetectado()) {
+                encontrado = true
+                console.log("Objetivo en la mira")
             }
-        } 
-        else {
-            console.log("¡Pelota al centro (Dir 5)! Fuerza: " + fuerzaBalon + ". Atacando al Banner...")
-            if (dirBanner === 5) {
-                motors.largeBC.tank(80, 80)
-            } else if (dirBanner < 5 || dirBanner === 0) {
-                motors.largeBC.tank(20, 50)
-            } else {
-                motors.largeBC.tank(50, 20)
-            }
+
+            loops.pause(50)
+            tiempoGiro += 50
+        }
+
+        detener()
+
+        if (encontrado) {
+            atacarObjetivo()
+        } else {
+            console.log("Explorando otra parte")
+
+            avanzarBuscando(
+                TIEMPO_EXPLORACION,
+                VELOCIDAD_AVANCE
+            )
         }
     }
 
-    pause(100)
-})
+    detener()
+}
+
+// Atacamos de manera agresiva suponiendo que nuestra ubacion inicial siempre sera la misma
+function atacarDuranteBusquedaArco() {
+    console.log("Ataque durante la busqueda del arco")
+
+    let tiempo = 0
+    avanzar(VELOCIDAD_MAXIMA)
+
+    while (tiempo < TIEMPO_ATAQUE) {
+        distancia = sensors.infrared1.proximity()
+
+        console.log(
+            "Ataque al buscar arco - IR1: " +
+            distancia
+        )
+
+        if (distancia <= DISTANCIA_CONTACTO) {
+            console.log("Contacto con el objetivo")
+            break
+        }
+
+        loops.pause(50)
+        tiempo += 50
+    }
+
+    // Empuja el objetivo de manera salvaje
+    avanzar(VELOCIDAD_MAXIMA)
+    pause(TIEMPO_EMPUJE)
+    detener()
+
+    // Recuperamos espacio para continuar girando.
+    retroceder(VELOCIDAD_APROXIMACION)
+    pause(TIEMPO_RETROCESO)
+    detener()
+}
+
+// Usamos un while de toda la vida para buscar el arco mientras seguimos atacando
+function buscarArco() {
+    console.log("Buscando arco (banner)")
+
+    arcoEncontrado = false
+
+    while (!arcoEncontrado) {
+        distancia = sensors.infrared1.proximity()
+
+        console.log(
+            "Arco - IR1: " +
+            distancia +
+            " DirBanner: " +
+            dirBanner
+        )
+
+        // El arco tiene prioridad es nuestro destino
+        if (arcoDetectadoPorSensor()) {
+            detener()
+            arcoEncontrado = true
+
+            console.log("Arco (banner) detectado")
+            break
+        }
+
+        // Ataca todo lo que se mueve
+        if (objetivoDetectado()) {
+            detener()
+            atacarDuranteBusquedaArco()
+        } else {
+            girar(1)
+        }
+
+        loops.pause(50)
+    }
+
+    detener()
+}
+
+// Esto es lo mas salvaje que se nos ocurrio para meter el balon con todo y arco
+function empujarHaciaArco() {
+    console.log("Empujando hacia el arco")
+
+    let tiempo = 0
+    avanzar(VELOCIDAD_MAXIMA)
+
+    while (tiempo < 3000) {
+        distancia = sensors.infrared1.proximity()
+
+        console.log(
+            "Empuje final - IR1: " +
+            distancia
+        )
+
+        loops.pause(50)
+        tiempo += 50
+    }
+
+    detener()
+    console.log("Empuje finalizado")
+}
+
+// Lecturas iniciales para entender que esta haciendo nuestro robot
+console.log("IR1 (obstaculo): " + sensors.infrared1.proximity())
+console.log("IR3 (pelota) Dir: " + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0))
+console.log("IR2 (banner) Dir: " + sensors.infrared2.getNumber(NumberFormat.UInt8LE, 0))
+
+pause(1000)
+
+// Ejecutamos nuestra estrategia salvaje
+ataqueInicial()
+buscarBalon()
+
+console.log("Objetivo alcanzado")
+
+buscarArco()
+
+console.log("Arco encontrado")
+
+pause(100)
+
+empujarHaciaArco()
+
+console.log("Tarea completada")
+brick.showString("Tarea completada", 1)
+//FIN JEAN CEDEÑO, MELANIE TOMALÁ, JESÚS TORRES.

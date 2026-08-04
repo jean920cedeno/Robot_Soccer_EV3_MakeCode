@@ -1,18 +1,26 @@
-console.log("=== INICIANDO TEST PUERTO 4 (DURACIÓN: 2 MINUTOS) ===")
+console.log("=== TEST HiTechnic IRSeeker (Puerto 4) ===")
 
-let INTERVALO_MS = 300
-// 2 minutos = 120,000 ms. Con pausas de 300ms = 400 iteraciones
-let TOTAL_ITERACIONES = 400 
+let INTERVALO_MS = 500
+let TOTAL_ITERACIONES = 240 // 2 minutos (240 x 500ms)
+
+// Aseguramos el modo de lectura (Modo 0 suele ser AC para pelotas IR)
+sensors.infrared4.setMode(0)
 
 for (let i = 1; i <= TOTAL_ITERACIONES; i++) {
-    let proximidad4 = sensors.infrared4.proximity()
+    // getNumber con UInt8LE en desplazamiento 0 lee la DIRECCIÓN (0 a 9)
+    let direccion = sensors.infrared4.getNumber(NumberFormat.UInt8LE, 0)
     
-    // Cálculo simple del tiempo transcurrido para mostrar en consola
-    let segundosTranscurridos = Math.floor((i * INTERVALO_MS) / 1000)
-    
-    console.log("[" + segundosTranscurridos + "s / 120s] Puerto 4 - Proximidad: " + proximidad4 + "%")
-    
+    let segundos = Math.floor((i * INTERVALO_MS) / 1000)
+
+    if (direccion === 0) {
+        console.log("[" + segundos + "s / 120s] Puerto 4 - IRSeeker: No detecta señal IR (0)")
+    } else if (direccion === 5) {
+        console.log("[" + segundos + "s / 120s] Puerto 4 - IRSeeker: ¡Emisor IR AL CENTRO! (5)")
+    } else {
+        console.log("[" + segundos + "s / 120s] Puerto 4 - IRSeeker: Señal en Dirección [" + direccion + "]")
+    }
+
     pause(INTERVALO_MS)
 }
 
-console.log("=== TEST DE 2 MINUTOS COMPLETADO EN PUERTO 4 ===")
+console.log("=== TEST COMPLETO ===")

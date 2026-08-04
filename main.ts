@@ -22,7 +22,7 @@ basic.forever(function () {
     if (!hayPelota && proximidadObstaculo < UMBRAL_OBSTACULO) {
         console.log("¡OBSTÁCULO DETECTADO! (Prox: " + proximidadObstaculo + "%). Marcha atrás 5s...")
         motors.largeBC.tank(-50, -50)
-        pause(5000)
+        pause(500)
         ciclosBusqueda = 0
     } 
 

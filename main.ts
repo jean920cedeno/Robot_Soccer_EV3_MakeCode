@@ -1,60 +1,68 @@
-console.log("=== SISTEMA CON BÚSQUEDA RÁPIDA (15 CICLOS) Y DESPLAZAMIENTO DOBLE ===")
+console.log("=== SISTEMA CON FILTRO DE OBSTÁCULO (EVITA CONFUNDIR LA PELOTA) ===")
 
 sensors.infrared3.setMode(0) // Puerto 3: Pelota (Modo AC)
 sensors.infrared2.setMode(1) // Puerto 2: Banner (Modo DC)
 
 const INTENSIDAD_MINIMA = 8 
+const UMBRAL_OBSTACULO = 20 
 
-// Variables para controlar las vueltas y tiempo de búsqueda
 let ciclosBusqueda = 0
-// Reducido a 15 ciclos por petición
 const MAX_CICLOS_GIRO = 15 
 
 basic.forever(function () {
+    // 1. Lecturas de sensores
+    let proximidadObstaculo = sensors.infrared1.proximity()
     let dirBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0)
     let fuerzaBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 6)
     let dirBanner = sensors.infrared2.getNumber(NumberFormat.UInt8LE, 0)
 
+    // Comprobamos si la pelota está realmente presente
     let hayPelota = (dirBalon >= 1 && dirBalon <= 9) && (fuerzaBalon >= INTENSIDAD_MINIMA)
 
-    // --- FASE 1: BUSCANDO LA PELOTA ---
-    if (!hayPelota) {
+    // --- PRIORIDAD 1: OBSTÁCULO REAL (Solo si NO es la pelota) ---
+    if (!hayPelota && proximidadObstaculo < UMBRAL_OBSTACULO) {
+        console.log("¡OBSTÁCULO DETECTADO! (Proximidad P1: " + proximidadObstaculo + "% sin pelota a la vista). Retrocediendo 5s...")
+        
+        // Retroceder 5 segundos
+        motors.largeBC.tank(-50, -50)
+        pause(5000)
+        
+        // Reiniciar ciclo de búsqueda
+        ciclosBusqueda = 0
+    } 
+
+    // --- PRIORIDAD 2: BÚSQUEDA DE PELOTA ---
+    else if (!hayPelota) {
         ciclosBusqueda++
 
-        // Si llega a los 15 ciclos sin ver el balón, avanza el doble de distancia
         if (ciclosBusqueda >= MAX_CICLOS_GIRO) {
-            console.log("¡Alcanzado límite de " + MAX_CICLOS_GIRO + " ciclos! Avanzando el doble de distancia...")
-            
-            // Avanza recto a velocidad moderada durante 2000 ms (el doble de tiempo)
+            console.log("Límite de giro alcanzado (" + MAX_CICLOS_GIRO + " ciclos). Avanzando en recta...")
             motors.largeBC.tank(40, 40)
-            pause(2000) 
-            
-            // Reiniciamos el contador para buscar desde la nueva posición
+            pause(2000)
             ciclosBusqueda = 0
         } else {
             console.log("Giro de búsqueda lento (" + ciclosBusqueda + "/" + MAX_CICLOS_GIRO + ")...")
-            // Giro lento sobre su propio eje
             motors.largeBC.tank(15, -15) 
         }
     } 
-    
-    // --- FASE 2: PELOTA ENCONTRADA ---
+
+    // --- PRIORIDAD 3: PERSEGUIR Y PATALEAR LA PELOTA ---
     else {
-        // En cuanto detecta el balón real, reseteamos el contador
         ciclosBusqueda = 0 
 
         if (dirBalon !== 5) {
-            console.log("¡Pelota detectada! Ajustando rumbo (Dir: " + dirBalon + ")")
+            console.log("Pelota a la vista. Ajustando rumbo (Dir: " + dirBalon + ")")
             if (dirBalon < 5) {
-                motors.largeBC.tank(12, 30) // Ajuste suave a la izquierda
+                motors.largeBC.tank(12, 30) // Giro suave a la izquierda
             } else {
-                motors.largeBC.tank(30, 12) // Ajuste suave a la derecha
+                motors.largeBC.tank(30, 12) // Giro suave a la derecha
             }
         } 
         else {
-            console.log("¡Pelota centrada! Apuntando al Blue Banner...")
+            console.log("¡Pelota al centro! Proximidad frontal: " + proximidadObstaculo + "%. Dirigiéndose al Banner...")
+            
             if (dirBanner === 5) {
-                motors.largeBC.tank(80, 80) // Ataque directo a gol
+                motors.largeBC.tank(80, 80) // Empujar la pelota al arco
             } else if (dirBanner < 5 || dirBanner === 0) {
                 motors.largeBC.tank(20, 50)
             } else {

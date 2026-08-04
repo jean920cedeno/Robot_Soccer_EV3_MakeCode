@@ -25,7 +25,7 @@ basic.forever(function () {
         
         // Retroceder 5 segundos
         motors.largeBC.tank(-50, -50)
-        pause(5000)
+        pause(500)
         
         // Reiniciar ciclo de búsqueda
         ciclosBusqueda = 0

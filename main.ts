@@ -4,7 +4,7 @@ sensors.infrared3.setMode(0) // Puerto 3: Pelota (Modo AC)
 sensors.infrared2.setMode(1) // Puerto 2: Banner (Modo DC)
 
 const INTENSIDAD_MINIMA = 8 
-const UMBRAL_OBSTACULO = 20 
+const UMBRAL_OBSTACULO = 10 
 
 let ciclosBusqueda = 0
 const MAX_CICLOS_GIRO = 15 

@@ -1,11 +1,5 @@
 // Muestra los puertos conectados simplemnete validacion
 brick.showPorts()
-
-// === CONFIGURACION DE SENSORES INFRARROJOS (SEEKER) ===
-// Reemplazamos los sensores de color por sensores IR en modo Seeker
-sensors.infrared3.setMode(0) // Puerto 3: Pelota (Modo AC) -> antes color2
-sensors.infrared2.setMode(1) // Puerto 2: Banner/Arco (Modo DC) -> antes color3
-
 //Depencia: Dependemos de una posicion incial adecuada, esto se hizo por tema de precision de sensores, aun no hemos
 //aprendido como usarlos correctamente, hace 4 dias descubrimos el tema de los sensores y que existen diferentes tipos
 //por eso esta implementacion algo apurada, pero haciendo varios intentos, si el robot se queda entretenido en una pared, u otro 
@@ -31,17 +25,9 @@ let TIEMPO_ATAQUE = 2500
 let TIEMPO_EMPUJE = 700
 let TIEMPO_RETROCESO = 300
 
-// Distancias de deteccion, se fueron modificando en pruebas y estas fueron las que generaban el comportamiento que mas nos agradaba
+// Distancias de deteccion, se fueron modificando en pruebas y estas fueron las que generaban el comportamiento que mas no agradaba
 let DISTANCIA_DETECCION = 30
 let DISTANCIA_CONTACTO = 8
-
-// Umbral de intensidad para confirmar que la pelota es real y no ruido del sensor IR
-let INTENSIDAD_MINIMA = 8
-
-// Variables de lectura de los sensores IR seeker
-let dirBalon = 0
-let fuerzaBalon = 0
-let dirBanner = 0
 
 // Detiene el robot de golpe
 function detener() {
@@ -66,20 +52,16 @@ function girar(direccion: number) {
     )
 }
 
-// Detecta una posible pelota usando el sensor IR3 en modo seeker (antes: color2/color3)
-// Solo se confirma si hay direccion valida (1-9) Y la fuerza de senal es suficiente
-function pelotaDetectadaPorSensor() {
-    dirBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0)
-    fuerzaBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 6)
-
-    return dirBalon > 0 && fuerzaBalon >= INTENSIDAD_MINIMA
+// Detecta una posible pelota blanca, nos ayudamos de dos sensores para mayor "precision"
+function pelotaDetectadaPorColor() {
+    return sensors.color2.color() == ColorSensorColor.White ||
+        sensors.color3.color() == ColorSensorColor.White
 }
 
-// Detecta el arco (banner) usando el sensor IR2 en modo seeker (antes: color2/color3 == Blue)
-function arcoDetectadoPorSensor() {
-    dirBanner = sensors.infrared2.getNumber(NumberFormat.UInt8LE, 0)
-
-    return dirBanner > 0
+// Detecta el arco azul.
+function arcoDetectadoPorColor() {
+    return sensors.color2.color() == ColorSensorColor.Blue ||
+        sensors.color3.color() == ColorSensorColor.Blue
 }
 
 // Detecta cualquier posible objetivo.
@@ -87,7 +69,7 @@ function objetivoDetectado() {
     distancia = sensors.infrared1.proximity()
 
     return distancia < DISTANCIA_DETECCION ||
-        pelotaDetectadaPorSensor()
+        pelotaDetectadaPorColor()
 }
 
 // Ejecuta el ataque inicial agresivo 
@@ -101,7 +83,7 @@ function ataqueInicial() {
         distancia = sensors.infrared1.proximity()
 
         console.log(
-            "Ataque inicial - IR1: " +
+            "Ataque inicial - IR: " +
             distancia +
             " Tiempo: " +
             tiempo
@@ -126,7 +108,7 @@ function atacarObjetivo() {
         distancia = sensors.infrared1.proximity()
 
         console.log(
-            "Ataque - IR1: " +
+            "Ataque - IR: " +
             distancia +
             " Tiempo: " +
             tiempo
@@ -198,12 +180,12 @@ function buscarBalon() {
             distancia = sensors.infrared1.proximity()
 
             console.log(
-                "Busqueda - IR1: " +
+                "Busqueda - IR: " +
                 distancia +
-                " DirBalon: " +
-                dirBalon +
-                " FuerzaBalon: " +
-                fuerzaBalon
+                " Color 2: " +
+                sensors.color2.color() +
+                " Color 3: " +
+                sensors.color3.color()
             )
 
             if (objetivoDetectado()) {
@@ -243,7 +225,7 @@ function atacarDuranteBusquedaArco() {
         distancia = sensors.infrared1.proximity()
 
         console.log(
-            "Ataque al buscar arco - IR1: " +
+            "Ataque al buscar arco - IR: " +
             distancia
         )
 
@@ -267,9 +249,9 @@ function atacarDuranteBusquedaArco() {
     detener()
 }
 
-// Usamos un while de toda la vida para buscar el arco mientras seguimos atacando
+// Usamos un while de toda la vida para buscar el arcos mientras seguimos atacando
 function buscarArco() {
-    console.log("Buscando arco (banner)")
+    console.log("Buscando arco azul")
 
     arcoEncontrado = false
 
@@ -277,18 +259,20 @@ function buscarArco() {
         distancia = sensors.infrared1.proximity()
 
         console.log(
-            "Arco - IR1: " +
+            "Arco - IR: " +
             distancia +
-            " DirBanner: " +
-            dirBanner
+            " Color 2: " +
+            sensors.color2.color() +
+            " Color 3: " +
+            sensors.color3.color()
         )
 
-        // El arco tiene prioridad es nuestro destino
-        if (arcoDetectadoPorSensor()) {
+        // El arco tiene prioridad es nuestro destinio
+        if (arcoDetectadoPorColor()) {
             detener()
             arcoEncontrado = true
 
-            console.log("Arco (banner) detectado")
+            console.log("Arco azul detectado")
             break
         }
 
@@ -317,7 +301,7 @@ function empujarHaciaArco() {
         distancia = sensors.infrared1.proximity()
 
         console.log(
-            "Empuje final - IR1: " +
+            "Empuje final - IR: " +
             distancia
         )
 
@@ -330,9 +314,9 @@ function empujarHaciaArco() {
 }
 
 // Lecturas iniciales para entender que esta haciendo nuestro robot
-console.log("IR1 (obstaculo): " + sensors.infrared1.proximity())
-console.log("IR3 (pelota) Dir: " + sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0))
-console.log("IR2 (banner) Dir: " + sensors.infrared2.getNumber(NumberFormat.UInt8LE, 0))
+console.log("IR: " + sensors.infrared1.proximity())
+console.log("Color 2: " + sensors.color2.color())
+console.log("Color 3: " + sensors.color3.color())
 
 pause(1000)
 

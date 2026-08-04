@@ -1,4 +1,4 @@
-console.log("=== SISTEMA CON GIRO LENTO Y NAVEGACIÓN DE BÚSQUEDA ===")
+console.log("=== SISTEMA CON BÚSQUEDA RÁPIDA (15 CICLOS) Y DESPLAZAMIENTO DOBLE ===")
 
 sensors.infrared3.setMode(0) // Puerto 3: Pelota (Modo AC)
 sensors.infrared2.setMode(1) // Puerto 2: Banner (Modo DC)
@@ -7,9 +7,8 @@ const INTENSIDAD_MINIMA = 8
 
 // Variables para controlar las vueltas y tiempo de búsqueda
 let ciclosBusqueda = 0
-// Un giro completo a velocidad 15 toma ~25 ciclos (a 100ms por ciclo). 
-// 3 a 4 vueltas equivalen a unos 80-100 ciclos.
-const MAX_CICLOS_GIRO = 80 
+// Reducido a 15 ciclos por petición
+const MAX_CICLOS_GIRO = 15 
 
 basic.forever(function () {
     let dirBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0)
@@ -22,25 +21,26 @@ basic.forever(function () {
     if (!hayPelota) {
         ciclosBusqueda++
 
-        // ¿Ya dio entre 3 y 4 vueltas completas sin encontrar nada?
+        // Si llega a los 15 ciclos sin ver el balón, avanza el doble de distancia
         if (ciclosBusqueda >= MAX_CICLOS_GIRO) {
-            console.log("¡Varias vueltas sin ver el balón! Avanzando unos centímetros para cambiar de zona...")
-            // Avanza recto a velocidad moderada durante 1 segundo
-            motors.largeBC.tank(40, 40)
-            pause(1000) 
+            console.log("¡Alcanzado límite de " + MAX_CICLOS_GIRO + " ciclos! Avanzando el doble de distancia...")
             
-            // Reiniciamos el contador para volver a intentar buscar desde la nueva posición
+            // Avanza recto a velocidad moderada durante 2000 ms (el doble de tiempo)
+            motors.largeBC.tank(40, 40)
+            pause(2000) 
+            
+            // Reiniciamos el contador para buscar desde la nueva posición
             ciclosBusqueda = 0
         } else {
             console.log("Giro de búsqueda lento (" + ciclosBusqueda + "/" + MAX_CICLOS_GIRO + ")...")
-            // Giro mucho más lento en su eje para mayor precisión de lectura
+            // Giro lento sobre su propio eje
             motors.largeBC.tank(15, -15) 
         }
     } 
     
     // --- FASE 2: PELOTA ENCONTRADA ---
     else {
-        // En cuanto detecta el balón real, reseteamos el contador de búsqueda
+        // En cuanto detecta el balón real, reseteamos el contador
         ciclosBusqueda = 0 
 
         if (dirBalon !== 5) {

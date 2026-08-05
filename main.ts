@@ -37,6 +37,10 @@ let TIEMPO_RETROCESO = 300
 let DISTANCIA_DETECCION = 30
 let DISTANCIA_CONTACTO = 8
 
+// Proximidad de IR1 por debajo de la cual, si no hay pelota, retrocedemos para no quedar atascados
+let DISTANCIA_RETROCESO_BUSQUEDA = 5
+let TIEMPO_RETROCESO_BUSQUEDA = 2000
+
 // Umbral de intensidad para confirmar que la pelota es real y no ruido del sensor IR
 let INTENSIDAD_MINIMA = 8
 
@@ -194,22 +198,39 @@ function avanzarBuscando(tiempoMaximo: number, velocidad: number) {
 // Ya no usa IR1 (proximity) ni ataca/explora con esos sensores: solo gira y avanza
 // guiandose por la senal de la pelota hasta que la intensidad indica que esta cerca.
 // sensors.infrared3.setMode(1) // Puerto 3: Pelota - Modo IR-SEEK (1): direccion + intensidad de una senal IR activa
+// Busca la pelota usando principalmente el sensor IR3 en modo Seek (direccion + intensidad).
+// Ademas usa IR1 solo como seguro anticolision: si hay un obstaculo muy cerca y no hay
+// senal de pelota, retrocede 2 segundos para no quedar atascado.
+// sensors.infrared3.setMode(1) // Puerto 3: Pelota - Modo IR-SEEK (1): direccion + intensidad de una senal IR activa
 function buscarBalon() {
-    console.log("[BUSQUEDA] Iniciando busqueda de la pelota - solo sensor Seek IR3")
+    console.log("[BUSQUEDA] Iniciando busqueda de la pelota - sensor Seek IR3 + seguro IR1")
 
     balonEncontrado = false
 
     while (!balonEncontrado) {
         pelotaDetectadaPorSensor()
+        distancia = sensors.infrared1.proximity()
+
+        let hayPelota = dirBalon > 0 && fuerzaBalon >= INTENSIDAD_MINIMA
 
         console.log(
-            "[BUSQUEDA] direccion: " +
+            "[BUSQUEDA] obstaculo: " +
+            distancia +
+            "% | direccion: " +
             dirBalon +
             " | intensidad: " +
             fuerzaBalon
         )
 
-        if (dirBalon <= 0 || fuerzaBalon < INTENSIDAD_MINIMA) {
+        if (distancia < DISTANCIA_RETROCESO_BUSQUEDA && !hayPelota) {
+            // Obstaculo muy cerca y no hay pelota: retrocede para no quedar atascado
+            detener()
+            console.log("[BUSQUEDA] Obstaculo a " + distancia + "% sin pelota detectada, retrocediendo")
+
+            retroceder(VELOCIDAD_APROXIMACION)
+            pause(TIEMPO_RETROCESO_BUSQUEDA)
+            detener()
+        } else if (!hayPelota) {
             // Sin senal valida de la pelota todavia: gira sobre su eje buscandola
             girar(1)
             avanzar(VELOCIDAD_AVANCE)
@@ -289,7 +310,6 @@ function buscarArco() {
         if (dirBanner <= 0) {
             // Sin senal del arco todavia: gira sobre su eje para buscarla
             girar(1)
-            avanzar(VELOCIDAD_AVANCE)
         } else if (fuerzaBanner >= INTENSIDAD_ARCO_CERCA) {
             // Senal fuerte: consideramos el arco localizado, listo para el empuje final
             detener()

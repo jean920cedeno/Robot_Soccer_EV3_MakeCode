@@ -1,11 +1,12 @@
-// Muestra los puertos conectados simplemnete validacion
-brick.showPorts()
-console.log("[SETUP] Verificando puertos conectados...")
-
-// === CONFIGURACION DE SENSORES INFRARROJOS (SEEKER) ===
-// Reemplazamos los sensores de color por sensores IR en modo Seeker
-sensors.infrared3.setMode(0) // Puerto 3: Pelota (Modo AC) -> antes color2
-sensors.infrared2.setMode(1) // Puerto 2: Banner/Arco (Modo DC) -> antes color3
+sensors.infrared3.setMode(1) // Puerto 3: Pelota - Modo IR-SEEK (1): direccion + intensidad de una senal IR activa
+sensors.infrared2.setMode(1) // Puerto 2: Banner/Arco - Modo IR-SEEK (1): direccion + intensidad de una senal IR activa
+// NOTA IMPORTANTE: el sensor IR solo tiene 3 modos reales (0=Proximity, 1=Seek, 2=Remote).
+// Antes el sensor 3 estaba en modo 0 (Proximity), pero pelotaDetectadaPorSensor() ya leia
+// dirBalon/fuerzaBalon como si estuviera en modo Seek -> esos valores nunca eran validos.
+// Se corrige a modo 1 para que coincida con lo que la funcion realmente lee.
+// OJO: Seek detecta una señal IR ACTIVA (como el beacon), no una pelota pasiva por si sola.
+// Hay que probar en el simulador si la pelota "cuenta" como emisor para este sensor;
+// si no, la deteccion real de la pelota seguira dependiendo del proximity de IR1.
 
 //Depencia: Dependemos de una posicion incial adecuada, esto se hizo por tema de precision de sensores, aun no hemos
 //aprendido como usarlos correctamente, hace 4 dias descubrimos el tema de los sensores y que existen diferentes tipos
@@ -69,6 +70,8 @@ function girar(direccion: number) {
 
 // Detecta una posible pelota usando el sensor IR3 en modo seeker (antes: color2/color3)
 // Solo se confirma si hay direccion valida (1-9) Y la fuerza de senal es suficiente
+// IMPORTANTE: requiere que IR3 este en modo Seek (setMode(1)); si el offset 6 no da
+// lecturas estables en el simulador, hay que loguear el byte crudo y reajustar el offset.
 function pelotaDetectadaPorSensor() {
     dirBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 0)
     fuerzaBalon = sensors.infrared3.getNumber(NumberFormat.UInt8LE, 6)

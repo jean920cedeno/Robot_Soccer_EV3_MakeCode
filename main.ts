@@ -289,7 +289,7 @@ function buscarArco() {
         if (dirBanner <= 0) {
             // Sin senal del arco todavia: gira sobre su eje para buscarla
             girar(1)
-            avanzar(VELOCIDAD_VELOCIDAD_AVANCE)
+            avanzar(VELOCIDAD_AVANCE)
         } else if (fuerzaBanner >= INTENSIDAD_ARCO_CERCA) {
             // Senal fuerte: consideramos el arco localizado, listo para el empuje final
             detener()

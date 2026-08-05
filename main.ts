@@ -40,10 +40,19 @@ let DISTANCIA_CONTACTO = 8
 // Umbral de intensidad para confirmar que la pelota es real y no ruido del sensor IR
 let INTENSIDAD_MINIMA = 8
 
+// Umbral de intensidad para considerar el arco "cerca" (sin usar IR1 en absoluto)
+// AJUSTAR probando en el simulador: mientras mas cerca del arco, mas alta deberia ser fuerzaBanner
+let INTENSIDAD_ARCO_CERCA = 15
+
+// Umbral de intensidad para considerar la pelota "cerca" (sin usar IR1 en absoluto)
+// AJUSTAR probando en el simulador: mientras mas cerca de la pelota, mas alta deberia ser fuerzaBalon
+let INTENSIDAD_BALON_CERCA = 15
+
 // Variables de lectura de los sensores IR seeker
 let dirBalon = 0
 let fuerzaBalon = 0
 let dirBanner = 0
+let fuerzaBanner = 0
 
 // Detiene el robot de golpe
 function detener() {
@@ -80,8 +89,10 @@ function pelotaDetectadaPorSensor() {
 }
 
 // Detecta el arco (banner) usando el sensor IR2 en modo seeker (antes: color2/color3 == Blue)
+// Lee direccion (offset 0) e intensidad (offset 6), igual que con la pelota.
 function arcoDetectadoPorSensor() {
     dirBanner = sensors.infrared2.getNumber(NumberFormat.UInt8LE, 0)
+    fuerzaBanner = sensors.infrared2.getNumber(NumberFormat.UInt8LE, 6)
 
     return dirBanner > 0
 }
@@ -179,57 +190,41 @@ function avanzarBuscando(tiempoMaximo: number, velocidad: number) {
     return false
 }
 
-// Busca una pelota o cualquier objeto (Comportamiento Salvaje)
+// Busca la pelota usando UNICAMENTE el sensor IR3 en modo Seek (direccion + intensidad).
+// Ya no usa IR1 (proximity) ni ataca/explora con esos sensores: solo gira y avanza
+// guiandose por la senal de la pelota hasta que la intensidad indica que esta cerca.
+// sensors.infrared3.setMode(1) // Puerto 3: Pelota - Modo IR-SEEK (1): direccion + intensidad de una senal IR activa
 function buscarBalon() {
-    console.log("[BUSQUEDA] Iniciando busqueda de la pelota")
+    console.log("[BUSQUEDA] Iniciando busqueda de la pelota - solo sensor Seek IR3")
 
     balonEncontrado = false
 
     while (!balonEncontrado) {
-        let tiempoGiro = 0
-        let encontrado = false
+        pelotaDetectadaPorSensor()
 
-        // Seleccionar una direccion random para darle movimiento
-        let direccion = Math.random() < 0.5 ? 1 : -1
+        console.log(
+            "[BUSQUEDA] direccion: " +
+            dirBalon +
+            " | intensidad: " +
+            fuerzaBalon
+        )
 
-        girar(direccion)
+        if (dirBalon <= 0 || fuerzaBalon < INTENSIDAD_MINIMA) {
+            // Sin senal valida de la pelota todavia: gira sobre su eje buscandola
+            girar(1)
+        } else if (fuerzaBalon >= INTENSIDAD_BALON_CERCA) {
+            // Senal fuerte: consideramos la pelota localizada y alcanzada
+            detener()
+            balonEncontrado = true
 
-        while (
-            tiempoGiro < TIEMPO_BUSQUEDA_GIRO &&
-            !encontrado
-        ) {
-            distancia = sensors.infrared1.proximity()
-
-            console.log(
-                "[BUSQUEDA] Girando... obstaculo: " +
-                distancia +
-                "% | pelota en direccion " +
-                dirBalon +
-                " con senal " +
-                fuerzaBalon
-            )
-
-            if (objetivoDetectado()) {
-                encontrado = true
-                console.log("[BUSQUEDA] Pelota localizada, preparando ataque")
-            }
-
-            loops.pause(50)
-            tiempoGiro += 50
-        }
-
-        detener()
-
-        if (encontrado) {
-            atacarObjetivo()
+            console.log("[BUSQUEDA] Pelota localizada (senal fuerte), contacto")
+            break
         } else {
-            console.log("[BUSQUEDA] Nada por aqui, avanzando para explorar otra zona")
-
-            avanzarBuscando(
-                TIEMPO_EXPLORACION,
-                VELOCIDAD_AVANCE
-            )
+            // Hay senal pero todavia lejos: avanza hacia la pelota
+            avanzar(VELOCIDAD_APROXIMACION)
         }
+
+        loops.pause(50)
     }
 
     detener()
@@ -271,37 +266,38 @@ function atacarDuranteBusquedaArco() {
     detener()
 }
 
-// Usamos un while de toda la vida para buscar el arco mientras seguimos atacando
+// Busca el arco usando UNICAMENTE el sensor IR2 en modo Seek (direccion + intensidad).
+// Ya no usa IR1 (proximity) ni ataca objetos en el camino: solo gira y avanza
+// guiandose por la senal del arco hasta que la intensidad indica que esta cerca.
+// sensors.infrared2.setMode(1) // Puerto 2: Banner/Arco - Modo IR-SEEK (1): direccion + intensidad de una senal IR activa
 function buscarArco() {
-    console.log("[ARCO] Iniciando busqueda del arco (banner)")
+    console.log("[ARCO] Iniciando busqueda del arco (banner) - solo sensor Seek IR2")
 
     arcoEncontrado = false
 
     while (!arcoEncontrado) {
-        distancia = sensors.infrared1.proximity()
+        arcoDetectadoPorSensor()
 
         console.log(
-            "[ARCO] Girando... obstaculo: " +
-            distancia +
-            "% | arco en direccion " +
-            dirBanner
+            "[ARCO] direccion: " +
+            dirBanner +
+            " | intensidad: " +
+            fuerzaBanner
         )
 
-        // El arco tiene prioridad es nuestro destino
-        if (arcoDetectadoPorSensor()) {
+        if (dirBanner <= 0) {
+            // Sin senal del arco todavia: gira sobre su eje para buscarla
+            girar(1)
+        } else if (fuerzaBanner >= INTENSIDAD_ARCO_CERCA) {
+            // Senal fuerte: consideramos el arco localizado, listo para el empuje final
             detener()
             arcoEncontrado = true
 
-            console.log("[ARCO] Arco localizado, listo para el empuje final")
+            console.log("[ARCO] Arco localizado (senal fuerte), listo para el empuje final")
             break
-        }
-
-        // Ataca todo lo que se mueve
-        if (objetivoDetectado()) {
-            detener()
-            atacarDuranteBusquedaArco()
         } else {
-            girar(1)
+            // Hay senal pero todavia lejos: avanza hacia el arco
+            avanzar(VELOCIDAD_APROXIMACION)
         }
 
         loops.pause(50)

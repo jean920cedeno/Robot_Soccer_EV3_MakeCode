@@ -212,6 +212,7 @@ function buscarBalon() {
         if (dirBalon <= 0 || fuerzaBalon < INTENSIDAD_MINIMA) {
             // Sin senal valida de la pelota todavia: gira sobre su eje buscandola
             girar(1)
+            avanzar(VELOCIDAD_AVANCE)
         } else if (fuerzaBalon >= INTENSIDAD_BALON_CERCA) {
             // Senal fuerte: consideramos la pelota localizada y alcanzada
             detener()
@@ -288,6 +289,7 @@ function buscarArco() {
         if (dirBanner <= 0) {
             // Sin senal del arco todavia: gira sobre su eje para buscarla
             girar(1)
+            avanzar(VELOCIDAD_VELOCIDAD_AVANCE)
         } else if (fuerzaBanner >= INTENSIDAD_ARCO_CERCA) {
             // Senal fuerte: consideramos el arco localizado, listo para el empuje final
             detener()
